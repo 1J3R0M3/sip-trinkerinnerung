@@ -44,12 +44,13 @@ Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6!App"
 ## Store-Paket und Einreichung
 
 ```powershell
-.\tools\Build-StorePackage.ps1
+.\tools\Build-StorePackage.ps1                   # aktuelle Version neu bauen
+.\tools\Build-StorePackage.ps1 -Version 1.0.1    # Update: Version erhöhen und bauen
 ```
 
 erzeugt `artifacts\AppPackages\*.msixupload` (x64 + arm64, unsigniert; der Store
 signiert selbst). Die Version steht in `src/App/Package.appxmanifest` und muss
-vor jeder Einreichung steigen. Konto, App-Name, Produktidentität, Einreichung
+vor jeder Einreichung steigen; `-Version` trägt sie ein und prüft das. Konto, App-Name, Produktidentität, Einreichung
 und Store-Texte: [docs/STORE.md](docs/STORE.md).
 
 GitHub Actions (`.github/workflows/build.yml`) führt bei jedem Push die Tests aus

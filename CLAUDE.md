@@ -141,6 +141,7 @@ Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\Appx
 Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6!App"
 dotnet run tools/gen-icons.cs   # Icons neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 .\tools\Build-StorePackage.ps1   # Store-Paket → artifacts\AppPackages\*.msixupload
+.\tools\Build-StorePackage.ps1 -Version 1.0.1   # Store-Update: Version im Manifest erhöhen + bauen
 ```
 
 Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`), sonst ist die EXE gesperrt.
