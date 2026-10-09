@@ -25,7 +25,7 @@ public sealed partial class MainWindow : Window
             overlapped.PreferredMinimumHeight = 560;
         }
         UpdateTexts();
-        BrokenFileBar.IsOpen = App.Current.Settings.BrokenFileBackup is not null;
+        BrokenFileBar.IsOpen = BrokenFileBar.Message.Length > 0;
         Loc.LanguageChanged += (_, _) => UpdateTexts();
         App.Current.Settings.Changed += OnSettingsChanged;
         ShowStartPage();
@@ -81,7 +81,9 @@ public sealed partial class MainWindow : Window
     private void UpdateTexts()
     {
         Title = Loc.AppName;
-        if (App.Current.Settings.BrokenFileBackup is { } backup)
-            BrokenFileBar.Message = Loc.SettingsBrokenFile(backup);
+        var messages = new List<string>();
+        if (App.Current.Settings.BrokenFileBackup is { } settingsBackup) messages.Add(Loc.SettingsBrokenFile(settingsBackup));
+        if (App.Current.Drinks.BrokenFileBackup is { } drinksBackup) messages.Add(Loc.DrinksBrokenFile(drinksBackup));
+        BrokenFileBar.Message = string.Join(Environment.NewLine, messages);
     }
 }

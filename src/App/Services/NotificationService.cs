@@ -46,4 +46,19 @@ public sealed class NotificationService(Localizer loc)
         notification.Group = Tag;
         AppNotificationManager.Default.Show(notification);
     }
+
+    /// <summary>Blendet eine offene Erinnerung aus, z. B. nachdem in der App ein Glas eingetragen wurde.</summary>
+    public void RemoveReminder() => _ = RemoveReminderAsync();
+
+    private static async Task RemoveReminderAsync()
+    {
+        try
+        {
+            await AppNotificationManager.Default.RemoveByTagAndGroupAsync(Tag, Tag);
+        }
+        catch (Exception)
+        {
+            // Nicht wichtig genug für eine Fehlermeldung: die Erinnerung bleibt dann einfach stehen.
+        }
+    }
 }
