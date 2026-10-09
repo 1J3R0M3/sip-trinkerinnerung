@@ -28,6 +28,7 @@ public static class SettingsSanitizer
         GlassMl = SettingsLimits.GlassMl.Clamp(input.GlassMl, previous.GlassMl),
         IntervalMin = SettingsLimits.IntervalMin.Clamp(input.IntervalMin, previous.IntervalMin),
         Autostart = input.Autostart,
+        Theme = Enum.IsDefined(input.Theme) ? input.Theme : previous.Theme,
         WorkHours = input.WorkHours is { Count: 7 } days
             ? [.. days.Select((d, i) => SanitizeDay(d.Enabled, d.Start, d.End, previous.WorkHours[i]))]
             : previous.WorkHours,
@@ -52,6 +53,7 @@ public static class SettingsSanitizer
             GlassMl = SettingsLimits.GlassMl.Clamp(Number(o["glassMl"]), defaults.GlassMl),
             IntervalMin = SettingsLimits.IntervalMin.Clamp(Number(o["intervalMin"]), defaults.IntervalMin),
             Autostart = Bool(o["autostart"]) ?? defaults.Autostart,
+            Theme = ParseTheme(Text(o["theme"])) ?? defaults.Theme,
         };
 
         if (o["workHours"] is JsonArray { Count: 7 } days)
@@ -85,6 +87,7 @@ public static class SettingsSanitizer
             ["glassMl"] = s.GlassMl,
             ["intervalMin"] = s.IntervalMin,
             ["autostart"] = s.Autostart,
+            ["theme"] = FormatTheme(s.Theme),
             ["workHours"] = new JsonArray([.. s.WorkHours.Select(d => (JsonNode)new JsonObject
             {
                 ["enabled"] = d.Enabled,
@@ -100,6 +103,22 @@ public static class SettingsSanitizer
         TimeOnly.TryParseExact(text, TimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var t) ? t : null;
 
     public static string FormatTime(TimeOnly time) => time.ToString(TimeFormat, CultureInfo.InvariantCulture);
+
+    public static string FormatTheme(AppTheme theme) => theme switch
+    {
+        AppTheme.Light => "light",
+        AppTheme.Dark => "dark",
+        _ => "system",
+    };
+
+    /// <summary>"system", "light", "dark" → Wert; alles andere → null.</summary>
+    public static AppTheme? ParseTheme(string? text) => text switch
+    {
+        "system" => AppTheme.System,
+        "light" => AppTheme.Light,
+        "dark" => AppTheme.Dark,
+        _ => null,
+    };
 
     private static WorkDay SanitizeDay(bool enabled, TimeOnly start, TimeOnly end, WorkDay fallback)
     {

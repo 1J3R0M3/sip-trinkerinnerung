@@ -15,7 +15,18 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | 2 | Einrichtungsassistent, Einstellungen, Sprachwechsel, Autostart | ✅ gebaut, Test durch den Nutzer läuft |
 | 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | ✅ gebaut, wartet auf Test durch den Nutzer |
 | 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ✅ gebaut, Workflow noch nie auf GitHub gelaufen |
-| 5 | Design-Feinschliff nach Feedback des Nutzers | ⏭️ als Nächstes |
+| 5 | Design: Smiley, Countdown-Kreis, Wasser-Fakten, Hell/Dunkel/System | ✅ gebaut, wartet auf Feedback |
+
+Entscheidungen aus Schritt 5:
+- Smiley (`HydrationMood`): vergleicht mit dem Soll für die Uhrzeit (linear über die Arbeitszeit,
+  an freien Tagen 8–20 Uhr), nicht nur mit dem Tagesziel. Gezeichnet als Vektor (`Controls/MoodFace`),
+  Farben nur aus Theme-Ressourcen, Bedeutung immer auch als Text. Hüpfen nur bei
+  eingeschalteten Windows-Animationseffekten.
+- Countdown-Kreis: ProgressRing, Kreis = ein ganzes Intervall (Snooze: 10 min), `ReminderEngine.Snapshot`.
+  Liegt die nächste Erinnerung nicht mehr heute, bleibt er leer.
+- Fakten: `fact.1` … `fact.N` in den Sprachdateien (nur gut belegte Aussagen), Start zufällig.
+- Farbschema `AppSettings.Theme` (JSON `theme`: system/light/dark), wirkt sofort auf Fensterinhalt
+  und Titelleiste; Tray-Menü und Toasts folgen immer Windows.
 
 **Nach jedem Schritt anhalten und auf Feedback des Nutzers warten.** Bei Unklarheiten nachfragen.
 

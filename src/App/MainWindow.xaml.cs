@@ -28,6 +28,7 @@ public sealed partial class MainWindow : Window
         BrokenFileBar.IsOpen = BrokenFileBar.Message.Length > 0;
         Loc.LanguageChanged += (_, _) => UpdateTexts();
         App.Current.Settings.Changed += OnSettingsChanged;
+        ApplyTheme(App.Current.Settings.Current.Theme);
         ShowStartPage();
 
         // Schließen versteckt das Fenster nur; die App läuft im Tray weiter.
@@ -68,8 +69,32 @@ public sealed partial class MainWindow : Window
         RootFrame.Navigate(page, null, new SuppressNavigationTransitionInfo());
     }
 
+    /// <summary>
+    /// Hell, dunkel oder wie Windows. Gilt für den Fensterinhalt (inkl. Mica) und die
+    /// Titelleisten-Buttons; das Tray-Menü und Benachrichtigungen folgen immer Windows.
+    /// </summary>
+    private void ApplyTheme(AppTheme theme)
+    {
+        if (Content is FrameworkElement root)
+        {
+            root.RequestedTheme = theme switch
+            {
+                AppTheme.Light => ElementTheme.Light,
+                AppTheme.Dark => ElementTheme.Dark,
+                _ => ElementTheme.Default,
+            };
+        }
+        AppWindow.TitleBar.PreferredTheme = theme switch
+        {
+            AppTheme.Light => TitleBarTheme.Light,
+            AppTheme.Dark => TitleBarTheme.Dark,
+            _ => TitleBarTheme.UseDefaultAppMode,
+        };
+    }
+
     private void OnSettingsChanged(object? sender, SettingsChangedEventArgs e)
     {
+        if (e.Previous.Theme != e.Current.Theme) ApplyTheme(e.Current.Theme);
         if (e.Previous.SetupDone != e.Current.SetupDone)
         {
             RootFrame.Navigate(e.Current.SetupDone ? typeof(ShellPage) : typeof(SetupPage), null,

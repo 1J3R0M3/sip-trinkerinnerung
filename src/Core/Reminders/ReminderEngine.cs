@@ -31,6 +31,18 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
     /// <summary>Nächster geplanter Termin; null = keiner in der nächsten Woche (keine Arbeitstage).</summary>
     public DateTimeOffset? Next { get; private set; }
 
+    /// <summary>Beginn des laufenden Intervalls (Termin − Intervall bzw. − Snooze) – Kreis voll.</summary>
+    public DateTimeOffset? PeriodStart { get; private set; }
+
+    /// <summary><see cref="Next"/> und <see cref="PeriodStart"/> zusammen, ohne dass der Timer-Thread dazwischenfunkt.</summary>
+    public (DateTimeOffset? Next, DateTimeOffset? PeriodStart) Snapshot
+    {
+        get
+        {
+            lock (_lock) return (Next, PeriodStart);
+        }
+    }
+
     /// <summary>Eine Erinnerung ist fällig (Hintergrund-Thread).</summary>
     public event EventHandler? Due;
 
@@ -68,6 +80,10 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
                 clock.GetUtcNow(), clock.LocalTimeZone);
             changed = next != Next;
             Next = next;
+            // Der Kreis steht für ein ganzes Intervall (beim Snooze: 10 Minuten), auch wenn die
+            // App mitten darin gestartet wurde.
+            var length = next is { } n && n == _snoozeUntil ? SnoozeDuration : TimeSpan.FromMinutes(settings().IntervalMin);
+            PeriodStart = next - length;
         }
         if (changed) NextChanged?.Invoke(this, EventArgs.Empty);
     }
