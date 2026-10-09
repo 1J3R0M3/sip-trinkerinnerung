@@ -19,7 +19,7 @@ Sip-Trinkerinnerung erhebt, überträgt und verkauft keine personenbezogenen Dat
   Windows-Einstellungen jederzeit ausschalten.
 - **Löschen:** Wenn du die App deinstallierst, entfernt Windows diese Daten.
 - **Kontakt:** Fragen kannst du als Issue unter
-  https://github.com/1J3R0M3/trinkwasser-winui/issues stellen.
+  https://github.com/1J3R0M3/sip-trinkerinnerung/issues stellen.
 
 ## English
 
@@ -36,4 +36,4 @@ Sip-Waterreminder does not collect, transmit or sell any personal data.
   can turn autostart off at any time in the app or in the Windows settings.
 - **Deletion:** Uninstalling the app removes this data.
 - **Contact:** Please open an issue at
-  https://github.com/1J3R0M3/trinkwasser-winui/issues.
+  https://github.com/1J3R0M3/sip-trinkerinnerung/issues.

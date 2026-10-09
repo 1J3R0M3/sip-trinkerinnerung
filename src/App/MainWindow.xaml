@@ -16,7 +16,7 @@
                 Height="16"
                 VerticalAlignment="Center"
                 AutomationProperties.AccessibilityView="Raw" />
-            <TextBlock Grid.Column="1" Text="{x:Bind Loc.AppName, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
+            <TextBlock x:Name="TitleText" Grid.Column="1" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
         </Grid>
 
         <!-- Hinweis, wenn die Einstellungsdatei beim Start unlesbar war und gesichert wurde. -->

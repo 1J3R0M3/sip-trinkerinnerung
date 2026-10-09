@@ -52,7 +52,7 @@ Entscheidungen aus Schritt 4 (Store-Paket):
   Ressourcenpakete ausgelagert, weil die App zur Laufzeit beide braucht.
 - Release-Paket lokal testen: x64-msix aus dem Bundle entpacken und das Layout registrieren
   (vorher LocalState sichern, da das Debug-Paket entfernt werden muss).
-- Repo-URL in PRIVACY.md/STORE.md angenommen als github.com/1J3R0M3/trinkwasser-winui.
+- GitHub-Repo: https://github.com/1J3R0M3/sip-trinkerinnerung (öffentlich). Lokaler Ordner heißt weiter `trinkwasser-winui`.
 
 Entscheidungen aus Schritt 2:
 - Einstellungen speichern sofort (wie die Windows-Einstellungen), ohne Speichern-Button. Ungültige
@@ -171,6 +171,6 @@ Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
 
 ## Git
 - Commits mit der E-Mail `180740383+1J3R0M3@users.noreply.github.com` (im Repo konfiguriert).
-- **Pushen nur auf Nachfrage.** Es ist noch kein Remote eingerichtet.
+- **Pushen nur auf Nachfrage.** Remote `origin` = github.com/1J3R0M3/sip-trinkerinnerung.
 - Commit-Nachrichten auf Deutsch, wie im Electron-Repo.
 - Texte und Kommentare im Code auf Deutsch.

@@ -9,17 +9,20 @@ public static class AppResources
     private static readonly ResourceManager Manager = new();
     private static readonly Dictionary<string, string> AppNames = [];
 
-    /// <summary>
-    /// Kurzname der App für die Oberfläche ("Sip") in der gewünschten Sprache ("de" oder "en").
-    /// Der offizielle Name (AppDisplayName) gilt nur für Store, Startmenü und Manifest.
-    /// </summary>
-    public static string AppName(string language)
+    /// <summary>Kurzname der App für Texte und Tray ("Sip") in der gewünschten Sprache ("de" oder "en").</summary>
+    public static string AppName(string language) => Get("AppShortName", language);
+
+    /// <summary>Offizieller Name ("Sip-Trinkerinnerung" / "Sip-Waterreminder") – Startmenü, Store, Fenstertitel.</summary>
+    public static string AppDisplayName(string language) => Get("AppDisplayName", language);
+
+    private static string Get(string key, string language)
     {
-        if (AppNames.TryGetValue(language, out var name)) return name;
+        var cacheKey = $"{key}|{language}";
+        if (AppNames.TryGetValue(cacheKey, out var value)) return value;
         var context = Manager.CreateResourceContext();
         context.QualifierValues["Language"] = language == Localizer.German ? "de-DE" : "en-US";
-        name = Manager.MainResourceMap.GetValue("Resources/AppShortName", context).ValueAsString;
-        AppNames[language] = name;
-        return name;
+        value = Manager.MainResourceMap.GetValue("Resources/" + key, context).ValueAsString;
+        AppNames[cacheKey] = value;
+        return value;
     }
 }
