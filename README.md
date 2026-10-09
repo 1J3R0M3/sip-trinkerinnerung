@@ -31,13 +31,13 @@ Store als MSIX. Nachfolger des Electron-Prototyps
 dotnet test tests/Core.Tests
 dotnet build src/App/App.csproj -p:Platform=x64
 Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\AppxManifest.xml -ForceUpdateFromAnyVersion
-Start-Process "shell:AppsFolder\PLACEHOLDER.Trinkwasser_7pn0cst8w4gvm!App"
+Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6!App"
 ```
 
 - Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`),
   sonst ist die EXE gesperrt.
 - Ändert sich das Manifest, scheitert die Registrierung mit 0x80073CFB. Dann
-  erst `Get-AppxPackage PLACEHOLDER.Trinkwasser | Remove-AppxPackage` – das
+  erst `Get-AppxPackage 1J3R0M3.Sip-Trinkerinnerung | Remove-AppxPackage` – das
   löscht auch die App-Daten.
 - Icons neu erzeugen: `dotnet run tools/gen-icons.cs` (aus dem Wurzelverzeichnis).
 

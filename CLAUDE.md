@@ -126,7 +126,7 @@ Code-Namespace `Trinkwasser.*`, `Trinkwasser.exe` und der Repo-Name sind intern 
     beste Tageszeit.
 - Paketversionen zentral in `Directory.Packages.props`.
 - Optik: Windows-11-Stil (Mica, NavigationView oder schlichte Seitenstruktur), hell und dunkel.
-- Store: `Package.appxmanifest` mit Platzhaltern für Identity Name/Publisher (aus Partner Center),
+- Store: `Package.appxmanifest` mit Identity Name/Publisher aus Partner Center (eingetragen, siehe docs/STORE.md),
   Logos in allen Skalierungen inkl. `targetsize`/`altform-unplated`, Sprachen de-DE und en-US,
   Architekturen x64 und arm64.
 - README mit Voraussetzungen, Build-, Test- und Einreichungsanleitung; optional GitHub-Actions-Workflow,
@@ -138,7 +138,7 @@ Code-Namespace `Trinkwasser.*`, `Trinkwasser.exe` und der Repo-Name sind intern 
 dotnet test tests/Core.Tests
 dotnet build src/App/App.csproj -p:Platform=x64
 Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\AppxManifest.xml -ForceUpdateFromAnyVersion
-Start-Process "shell:AppsFolder\PLACEHOLDER.Trinkwasser_7pn0cst8w4gvm!App"
+Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6!App"
 dotnet run tools/gen-icons.cs   # Icons neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 .\tools\Build-StorePackage.ps1   # Store-Paket → artifacts\AppPackages\*.msixupload
 ```
@@ -156,7 +156,7 @@ Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
 - Assets werden ins Ausgabeverzeichnis kopiert (`CopyToOutputDirectory`), damit die Registrierung
   direkt aus `bin` funktioniert.
 - Ändert sich das Manifest (z. B. neue Extension), scheitert `Add-AppxPackage -Register` mit
-  0x80073CFB. Dann erst `Get-AppxPackage PLACEHOLDER.Trinkwasser | Remove-AppxPackage` (löscht LocalState!).
+  0x80073CFB. Dann erst `Get-AppxPackage 1J3R0M3.Sip-Trinkerinnerung | Remove-AppxPackage` (löscht LocalState!).
 - `StartupTask.GetAsync` nie direkt auf dem UI-Thread im Loaded-Ereignis aufrufen: WinUI stürzt
   dann nativ mit 0xC000027B ab (Wiedereintritt). `AutostartService` holt die Task per `Task.Run`.
 - WinUI-Abstürze mit 0xC000027B zeigen sich ohne Debugger nur im Ereignisprotokoll

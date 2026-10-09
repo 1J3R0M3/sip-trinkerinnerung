@@ -17,6 +17,15 @@ if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { $env:PATH = "$env
 
 if (Test-Path $out) { Remove-Item $out -Recurse -Force }
 
+# Immer sauber bauen: Der inkrementelle Build übernimmt Änderungen an der Paketidentität
+# nicht in die Upload-Zwischenordner (Upload\ForUploadBundle), das Bundle hätte dann die alte.
+foreach ($dir in 'bin', 'obj') {
+    Get-ChildItem (Join-Path $root "src\App\$dir") -Directory -ErrorAction SilentlyContinue |
+        ForEach-Object { Join-Path $_.FullName 'Release' } |
+        Where-Object { Test-Path $_ } |
+        ForEach-Object { Remove-Item $_ -Recurse -Force }
+}
+
 dotnet build (Join-Path $root 'src\App\App.csproj') -nologo -v:m -c Release -p:Platform=x64 `
     -p:GenerateAppxPackageOnBuild=true -p:UapAppxPackageBuildMode=StoreUpload `
     -p:AppxBundle=Always '-p:AppxBundlePlatforms=x64|arm64' `

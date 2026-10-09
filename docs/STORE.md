@@ -18,18 +18,16 @@ Code-Signing-Zertifikat ist nicht nötig.
    - `AppShortName`: „Sip“ in der App selbst (Titelleiste, Tray, Texte)
 
    Ist ein Name schon vergeben, nur `AppDisplayName` anpassen.
-4. Unter **Produktverwaltung → Produktidentität** stehen die Werte, die die
-   Platzhalter ersetzen:
+4. Die Produktidentität aus **Produktverwaltung → Produktidentität** ist
+   eingetragen und darf nicht mehr geändert werden:
 
-   | Partner Center                          | Wo im Projekt                                              |
-   | --------------------------------------- | ---------------------------------------------------------- |
-   | Package/Identity/Name                   | `Package.appxmanifest` → `Identity Name`                   |
-   | Package/Identity/Publisher (`CN=…`)     | `Package.appxmanifest` → `Identity Publisher`              |
-   | Package/Properties/PublisherDisplayName | beide `Resources.resw` → `PublisherDisplayName`            |
+   | Partner Center                          | Wert                                     | Wo im Projekt                                   |
+   | --------------------------------------- | ---------------------------------------- | ----------------------------------------------- |
+   | Package/Identity/Name                   | `1J3R0M3.Sip-Trinkerinnerung`            | `Package.appxmanifest` → `Identity Name`        |
+   | Package/Identity/Publisher              | `CN=DA341E14-0D55-4F79-AE19-763C3E8DD1B5` | `Package.appxmanifest` → `Identity Publisher`   |
+   | Package/Properties/PublisherDisplayName | `1J3R0M3`                                | beide `Resources.resw` → `PublisherDisplayName` |
 
-   Danach ändert sich der Paketname. Für lokale Tests den Start-Befehl im README
-   anpassen (`shell:AppsFolder\<Name>_<Hash>!App`, den Namen mit Hash zeigt
-   `Get-AppxPackage <Name>`).
+   Paketfamilie lokal: `1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6`.
 
 ## 2. Paket bauen
 
