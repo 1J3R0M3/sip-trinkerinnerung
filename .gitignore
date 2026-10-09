@@ -6,3 +6,4 @@ AppPackages/
 BundleArtifacts/
 TestResults/
 *.pfx
+artifacts/

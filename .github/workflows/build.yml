@@ -1,0 +1,37 @@
+name: Build
+
+# Testet Core und baut das Store-Paket (.msixupload, x64 + arm64) auf einem
+# Windows-Runner. Das Paket ist unsigniert – signiert wird es beim Hochladen in
+# Partner Center vom Microsoft Store. Es hängt als Artefakt am Workflow-Lauf.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Tests
+        run: dotnet test tests/Core.Tests -c Release
+
+      - name: Store-Paket bauen
+        shell: pwsh
+        run: ./tools/Build-StorePackage.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Trinkwasser-Store
+          path: artifacts/AppPackages/*.msixupload
+          if-no-files-found: error

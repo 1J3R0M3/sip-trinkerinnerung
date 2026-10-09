@@ -17,6 +17,26 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
+  <!-- Store-Paket -->
+  <PropertyGroup>
+    <!--
+      .NET-Laufzeit im Release-Paket mitliefern: Für .NET gibt es im Store kein Framework-Paket,
+      ohne sie startet die App nur, wenn zufällig .NET 10 installiert ist. Die Windows App SDK
+      Runtime dagegen installiert der Store als Abhängigkeit selbst.
+    -->
+    <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
+    <!-- Sonst wird für den arm64-Teil des Bundles die Runtime-ID des Build-Rechners (win-x64) geraten. -->
+    <RuntimeIdentifier Condition="'$(Configuration)' == 'Release' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Configuration)' == 'Release' and '$(Platform)' == 'arm64'">win-arm64</RuntimeIdentifier>
+    <!-- Symbolpaket braucht ein C++-Werkzeug (mspdbcmf.exe) und bringt für reinen .NET-Code nichts. -->
+    <AppxSymbolPackageEnabled>false</AppxSymbolPackageEnabled>
+    <!--
+      Sprachen nicht in eigene Ressourcenpakete auslagern: Die App wechselt die Sprache selbst
+      und braucht Deutsch und Englisch immer, auch wenn Windows nur eine davon nutzt.
+    -->
+    <AppxBundleAutoResourcePackageQualifiers>Scale|DXFeatureLevel</AppxBundleAutoResourcePackageQualifiers>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Kopieren, damit das Paket auch direkt aus dem Build-Ordner registriert werden kann. -->
     <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
@@ -33,6 +53,23 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
+
+  <!--
+    Das Metapaket Microsoft.WindowsAppSDK (auch über H.NotifyIcon) bringt Windows ML mit
+    (onnxruntime, DirectML, je Architektur rund 40 MB). Die App nutzt kein ML – nicht mitkopieren.
+  -->
+  <Target Name="_ExcludeWindowsML" AfterTargets="ResolveLockFileCopyLocalFiles" BeforeTargets="_CopyFilesMarkedCopyLocal">
+    <ItemGroup>
+      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.NuGetPackageId)' == 'Microsoft.Windows.AI.MachineLearning'" />
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.NuGetPackageId)' == 'Microsoft.Windows.AI.MachineLearning'" />
+    </ItemGroup>
+  </Target>
+  <!-- Self-contained (Release) packt über die Publish-Pipeline mit eigener Dateiliste. -->
+  <Target Name="_ExcludeWindowsMLFromPublish" AfterTargets="_ResolveCopyLocalAssetsForPublish">
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Remove="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(_ResolvedCopyLocalPublishAssets.NuGetPackageId)' == 'Microsoft.Windows.AI.MachineLearning'" />
+    </ItemGroup>
+  </Target>
 
   <!-- Zeigt das Projekt in Visual Studio als paketierbare App an (F5 = MSIX bereitstellen). -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
