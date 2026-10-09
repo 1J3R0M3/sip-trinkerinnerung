@@ -156,7 +156,11 @@ auf „Getrunken“ wird es gezählt, mit „In 10 Min. erinnern“ verschoben.
 
 - Erinnerungen nur während deiner Arbeitszeiten, für jeden Wochentag einstellbar
 - Tages- und Wochenziel mit Fortschrittsanzeige
+- Ein Smiley zeigt auf einen Blick, ob du für die Uhrzeit genug getrunken hast
+- Countdown-Kreis bis zur nächsten Erinnerung
 - Statistik: Wochenverlauf, Tagesdurchschnitt, beste Tageszeit, Serie
+- Wissenswertes rund ums Wasser auf der Startseite
+- Hell, dunkel oder wie Windows
 - Deutsch und Englisch, umschaltbar ohne Neustart
 - Auf Wunsch Start mit Windows, ohne Fenster im Infobereich
 - Keine Werbung, kein Konto, keine Internetverbindung – alle Daten bleiben auf
@@ -176,7 +180,11 @@ glass of water at your chosen interval. Click "Done" to log it or "Remind me in
 
 - Reminders only during your working hours, configurable per weekday
 - Daily and weekly goals with progress
+- A smiley shows at a glance whether you're on track for the time of day
+- Countdown ring until the next reminder
 - Statistics: weekly history, daily average, best time of day, streak
+- Water facts on the home page
+- Light, dark or system theme
 - German and English, switchable without restarting
 - Optionally starts with Windows, without a window, in the notification area
 - No ads, no account, no internet connection – all data stays on your device
