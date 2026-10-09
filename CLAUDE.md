@@ -14,7 +14,8 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | 1 | Projektgerüst, Single-Instance, Tray, Test-Toast mit beiden Buttons inkl. Aktivierung | ✅ fertig, vom Nutzer getestet |
 | 2 | Einrichtungsassistent, Einstellungen, Sprachwechsel, Autostart | ✅ gebaut, Test durch den Nutzer läuft |
 | 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | ✅ gebaut, wartet auf Test durch den Nutzer |
-| 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ⏭️ als Nächstes |
+| 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ✅ gebaut, Workflow noch nie auf GitHub gelaufen |
+| 5 | Design-Feinschliff nach Feedback des Nutzers | ⏭️ als Nächstes |
 
 **Nach jedem Schritt anhalten und auf Feedback des Nutzers warten.** Bei Unklarheiten nachfragen.
 
@@ -29,6 +30,18 @@ Entscheidungen aus Schritt 3:
   Streak ab heute rückwärts; heute bricht nicht, freie Tage brechen nicht, zählen aber, wenn erreicht.
   Gewertet wird mit den aktuellen Zielen/Arbeitstagen (keine Historie der Einstellungen).
 - „Rückgängig“ auf der Startseite nur für Einträge von heute. Tray hat „+1 Glas“.
+
+Entscheidungen aus Schritt 4 (Store-Paket):
+- Gebaut wird mit `dotnet build` (kein VS-MSBuild nötig), Bundle x64 + arm64, unsigniert.
+- Release ist self-contained (.NET-Laufzeit im Paket, für .NET gibt es kein Store-Framework-Paket);
+  dafür setzt das csproj im Release die RuntimeIdentifier pro Plattform. Debug bleibt framework-dependent.
+- Windows ML (onnxruntime, DirectML) kommt über das Metapaket (auch via H.NotifyIcon) mit und wird
+  per Target aus Copy-Local- und Publish-Liste entfernt. Paket je Architektur ~46 MB.
+- Sprachen stehen explizit im Manifest (x-generate trug nur en-US ein) und werden nicht in
+  Ressourcenpakete ausgelagert, weil die App zur Laufzeit beide braucht.
+- Release-Paket lokal testen: x64-msix aus dem Bundle entpacken und das Layout registrieren
+  (vorher LocalState sichern, da das Debug-Paket entfernt werden muss).
+- Repo-URL in PRIVACY.md/STORE.md angenommen als github.com/1J3R0M3/trinkwasser-winui.
 
 Entscheidungen aus Schritt 2:
 - Einstellungen speichern sofort (wie die Windows-Einstellungen), ohne Speichern-Button. Ungültige
@@ -115,6 +128,7 @@ dotnet build src/App/App.csproj -p:Platform=x64
 Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\AppxManifest.xml -ForceUpdateFromAnyVersion
 Start-Process "shell:AppsFolder\PLACEHOLDER.Trinkwasser_7pn0cst8w4gvm!App"
 dotnet run tools/gen-icons.cs   # Icons neu erzeugen (aus dem Repo-Wurzelverzeichnis)
+.\tools\Build-StorePackage.ps1   # Store-Paket → artifacts\AppPackages\*.msixupload
 ```
 
 Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`), sonst ist die EXE gesperrt.
