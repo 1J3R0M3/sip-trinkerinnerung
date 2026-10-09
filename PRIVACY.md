@@ -1,10 +1,10 @@
-# Datenschutzerklärung / Privacy Policy – Trinkwasser
+# Datenschutzerklärung / Privacy Policy – Sip
 
 _Stand / Last updated: 9. Oktober 2026_
 
 ## Deutsch
 
-Trinkwasser erhebt, überträgt und verkauft keine personenbezogenen Daten.
+Sip-Trinkerinnerung erhebt, überträgt und verkauft keine personenbezogenen Daten.
 
 - **Keine Netzwerkverbindungen:** Die App baut keine Verbindung zum Internet
   auf. Sie enthält keine Werbung, keine Analyse- oder Tracking-Dienste und
@@ -23,7 +23,7 @@ Trinkwasser erhebt, überträgt und verkauft keine personenbezogenen Daten.
 
 ## English
 
-Drink Water (Trinkwasser) does not collect, transmit or sell any personal data.
+Sip-Waterreminder does not collect, transmit or sell any personal data.
 
 - **No network access:** The app never connects to the internet. It contains no
   ads, no analytics or tracking, and sends no crash reports to third parties.

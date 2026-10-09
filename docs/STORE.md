@@ -8,12 +8,16 @@ Code-Signing-Zertifikat ist nicht nötig.
 1. Entwicklerkonto in [Partner Center](https://partner.microsoft.com/dashboard)
    anlegen (Einzelperson).
 2. **Apps und Spiele → Neues Produkt → MSIX- oder PWA-App** und den App-Namen
-   reservieren, z. B. „Trinkwasser“. Für einen englischen Namen („Drink Water“)
-   unter **Produktverwaltung → App-Namen verwalten** einen zweiten Namen
-   reservieren. Jeder Name im Paket muss in Partner Center reserviert sein.
+   **„Sip-Trinkerinnerung“** reservieren, dann unter **Produktverwaltung →
+   App-Namen verwalten** zusätzlich **„Sip-Waterreminder“**. Jeder Name im Paket
+   muss in Partner Center reserviert sein, und zwar genau so geschrieben.
 3. Die Namen stehen zentral in `src/App/Strings/de-DE/Resources.resw` und
-   `src/App/Strings/en-US/Resources.resw` (`AppDisplayName`). Fenster, Tray,
-   Startmenü und Texte übernehmen sie von dort.
+   `src/App/Strings/en-US/Resources.resw`:
+   - `AppDisplayName`: offizieller Name für Store, Startmenü, Autostart-Eintrag
+     und als Absender der Benachrichtigungen
+   - `AppShortName`: „Sip“ in der App selbst (Titelleiste, Tray, Texte)
+
+   Ist ein Name schon vergeben, nur `AppDisplayName` anpassen.
 4. Unter **Produktverwaltung → Produktidentität** stehen die Werte, die die
    Platzhalter ersetzen:
 
@@ -73,7 +77,7 @@ erhöhen. Format `Major.Minor.Build.0` – die letzte Stelle muss 0 sein.
 Erinnert dich während der Arbeit ans Wassertrinken – mit Tages- und Wochenziel.
 
 **Beschreibung**
-Trinkwasser läuft unauffällig im Infobereich und erinnert dich in deinem
+Sip läuft unauffällig im Infobereich und erinnert dich in deinem
 Wunschintervall per Windows-Benachrichtigung an ein Glas Wasser. Mit einem Klick
 auf „Getrunken“ wird es gezählt, mit „In 10 Min. erinnern“ verschoben.
 
@@ -93,7 +97,7 @@ auf „Getrunken“ wird es gezählt, mit „In 10 Min. erinnern“ verschoben.
 Reminds you to drink water while you work – with daily and weekly goals.
 
 **Description**
-Drink Water sits quietly in the notification area and reminds you to have a
+Sip sits quietly in the notification area and reminds you to have a
 glass of water at your chosen interval. Click "Done" to log it or "Remind me in
 10 min" to snooze.
 
