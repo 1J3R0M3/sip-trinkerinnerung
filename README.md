@@ -1,6 +1,6 @@
-# Trinkwasser – Erinnerungs-App für Windows 11
+# Sip – Trinkerinnerung für Windows 11
 
-Trinkwasser läuft im Infobereich und erinnert während der Arbeitszeit per
+Sip läuft im Infobereich und erinnert während der Arbeitszeit per
 Windows-Benachrichtigung ans Wassertrinken. „Getrunken“ zählt ein Glas,
 „In 10 Min. erinnern“ verschiebt die Erinnerung.
 

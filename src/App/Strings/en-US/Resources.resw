@@ -12,9 +12,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <!-- Central place for the app name (Start menu, taskbar, window, tray, texts). -->
+  <!-- Official name as reserved in Partner Center (Store, Start menu, startup entry, notification sender). -->
   <data name="AppDisplayName" xml:space="preserve">
-    <value>Drink Water</value>
+    <value>Sip-Waterreminder</value>
+  </data>
+  <!-- Short name inside the app (title bar, tray, texts with {app}). -->
+  <data name="AppShortName" xml:space="preserve">
+    <value>Sip</value>
   </data>
   <data name="AppDescription" xml:space="preserve">
     <value>Reminds you to drink enough water during your working hours.</value>

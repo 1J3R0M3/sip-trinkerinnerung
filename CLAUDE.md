@@ -1,6 +1,6 @@
-# Trinkwasser – Windows-11-App (WinUI 3)
+# Sip – Windows-11-App (WinUI 3)
 
-Trinkwasser-Erinnerungs-App für Windows 11 in C# mit WinUI 3 (Windows App SDK), verteilt über den
+Trinkwasser-Erinnerungs-App „Sip“ für Windows 11 in C# mit WinUI 3 (Windows App SDK), verteilt über den
 Microsoft Store als MSIX. Kostenlos, ohne Telemetrie, Daten nur lokal. Ziel: eine App, die viele
 Menschen im Alltag nutzen – also sorgfältig, barrierearm und robust bauen.
 
@@ -78,10 +78,11 @@ Entscheidungen aus Schritt 2:
 - Tropfen-Icon → bereits portiert nach `tools/gen-icons.cs`
 
 ### App-Name
-Steht noch nicht fest (Arbeitstitel „Trinkwasser“ / „Drink Water“). Zentral nur in
-`src/App/Strings/de-DE/Resources.resw` und `en-US/Resources.resw` (`AppDisplayName`). Manifest,
-Fenster, Tray und Texte (`{app}`) lesen ihn von dort. Code-Namespace `Trinkwasser.*` und
-`Trinkwasser.exe` sind intern und müssen bei einer Umbenennung nicht geändert werden.
+Offiziell (vom Nutzer festgelegt, so in Partner Center zu reservieren): **„Sip-Trinkerinnerung“** (de)
+und **„Sip-Waterreminder“** (en), in `src/App/Strings/<Sprache>/Resources.resw` als `AppDisplayName`
+→ Manifest, Startmenü, StartupTask, Absender der Toasts. In der App selbst (Titelleiste, Tray,
+Texte mit `{app}`) steht der Kurzname `AppShortName` = „Sip“ (`AppResources.AppName`).
+Code-Namespace `Trinkwasser.*`, `Trinkwasser.exe` und der Repo-Name sind intern und bleiben.
 
 ### Funktionen
 - System-Tray (H.NotifyIcon.WinUI). Fenster schließen = in den Tray; „Beenden“ im Tray-Menü.
