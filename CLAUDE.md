@@ -1,0 +1,125 @@
+# Trinkwasser – Windows-11-App (WinUI 3)
+
+Trinkwasser-Erinnerungs-App für Windows 11 in C# mit WinUI 3 (Windows App SDK), verteilt über den
+Microsoft Store als MSIX. Kostenlos, ohne Telemetrie, Daten nur lokal. Ziel: eine App, die viele
+Menschen im Alltag nutzen – also sorgfältig, barrierearm und robust bauen.
+
+Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lokal unter
+`C:\Users\Jerome\Projekte\trinkwasser-app`, nur als Referenz – Electron-Code nicht übernehmen).
+
+## Stand
+
+| Schritt | Inhalt | Status |
+|---|---|---|
+| 1 | Projektgerüst, Single-Instance, Tray, Test-Toast mit beiden Buttons inkl. Aktivierung | ✅ fertig, vom Nutzer getestet |
+| 2 | Einrichtungsassistent, Einstellungen, Sprachwechsel, Autostart | ⏭️ als Nächstes |
+| 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | offen |
+| 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | offen |
+
+**Nach jedem Schritt anhalten und auf Feedback des Nutzers warten.** Bei Unklarheiten nachfragen.
+
+Vorläufig aus Schritt 1, in Schritt 3 zu ersetzen: die Liste „Aus Benachrichtigungen empfangen“
+im Hauptfenster (`MainViewModel.ReceivedActions`, Sprachschlüssel `home.actions*` und `action.*`).
+„In 10 Min. erinnern“ wird bisher nur protokolliert, noch nicht geplant.
+
+## Anforderungen
+
+### Aus dem Electron-Repo übernehmen
+- Texte aus `src/shared/locales/de.json` und `en.json` → bereits in `src/Core/Localization/Locales/`
+  (App-Name dort durch `{app}` ersetzt)
+- `PRIVACY.md` und Store-Texte aus `docs/STORE.md` (gibt es erst ab Commit cf096ae, nicht im Tag v0.2.0)
+- Einstellungslogik inkl. Prüfung und Grenzwerten aus `src/main/settings.js`:
+  - Tagesziel 250–10000 ml (Standard 2000), Wochenziel 250–70000 ml (Standard 10000),
+    Glas 50–2000 ml (Standard 250), Intervall 5–240 min (Standard 60), Autostart Standard aus
+  - Arbeitszeiten: Index 0 = Montag … 6 = Sonntag, Standard Mo–Fr 08:00–17:00 an, Sa/So aus
+  - Zeiten im Format `HH:mm`; Ende muss nach Beginn liegen (keine Schichten über Mitternacht),
+    sonst Rückfall auf die vorherigen Zeiten des Tages, nur `enabled` wird übernommen
+  - Zahlen werden gerundet und auf die Grenzen geklemmt; ungültige Werte → vorheriger Wert
+  - Sprache: Standard nach Windows-Sprache (de* → de, sonst en)
+- Tropfen-Icon → bereits portiert nach `tools/gen-icons.cs`
+
+### App-Name
+Steht noch nicht fest (Arbeitstitel „Trinkwasser“ / „Drink Water“). Zentral nur in
+`src/App/Strings/de-DE/Resources.resw` und `en-US/Resources.resw` (`AppDisplayName`). Manifest,
+Fenster, Tray und Texte (`{app}`) lesen ihn von dort. Code-Namespace `Trinkwasser.*` und
+`Trinkwasser.exe` sind intern und müssen bei einer Umbenennung nicht geändert werden.
+
+### Funktionen
+- System-Tray (H.NotifyIcon.WinUI). Fenster schließen = in den Tray; „Beenden“ im Tray-Menü.
+- Nur eine Instanz: eigene `Main` mit `AppInstance.FindOrRegisterForKey` und `RedirectActivationToAsync`.
+- Toasts über `Microsoft.Windows.AppNotifications` mit Buttons „Getrunken“ und „In 10 Min. erinnern“;
+  Aktivierung bei laufender und bei beendeter App (Klick im Info-Center). AUMID aus dem MSIX-Paket.
+- Einrichtungsassistent beim ersten Start: Sprache, Tagesziel, Wochenziel, Menge pro Glas,
+  Erinnerungsintervall, Arbeitszeiten (eine gemeinsame Zeit + Wochentage zum Anklicken), Autostart.
+  Wochenziel vorbelegt mit Tagesziel × Anzahl Arbeitstage und nachgeführt, bis der Nutzer es selbst ändert.
+- Einstellungen: alles änderbar, Arbeitszeiten pro Wochentag einzeln (an/aus, von, bis), Button
+  „Montag auf alle aktiven Tage übertragen“. Außerhalb der Arbeitszeit keine Erinnerungen.
+  Schichten über Mitternacht nicht unterstützt (Ende > Beginn).
+- Autostart: StartupTask im Manifest; Schalter über `Windows.ApplicationModel.StartupTask`
+  (`RequestEnableAsync`/`Disable`). Status „vom Nutzer in Windows deaktiviert“ korrekt anzeigen.
+  Bei Aktivierung über die StartupTask nur im Tray starten, ohne Fenster.
+- Erinnerungslogik:
+  - Intervall startet nach jedem „Getrunken“ neu. Snooze: 10 Minuten.
+  - Nach Ende der Arbeitszeit keine Erinnerung mehr; am nächsten Arbeitstag zur Startzeit + Intervall.
+  - Schlaf, Ruhezustand, Zeitumstellung: Termine nach dem Aufwachen neu berechnen, verpasste
+    Erinnerungen nicht nachholen.
+- Startseite: Fortschritt Tages- und Wochenziel, „+1 Glas“, „Rückgängig“ (letzten Eintrag löschen),
+  Test-Benachrichtigung.
+- Statistiken: Wochenverlauf als Balken (eigene XAML-Balken, keine Chart-Bibliothek),
+  Durchschnitt pro Tag, beste Tageszeit (Stunde mit den meisten Gläsern), Streak (Tage mit erreichtem
+  Tagesziel; Tage ohne Arbeitszeit unterbrechen den Streak nicht), Zielerreichung in Prozent.
+- Sprachen Deutsch und Englisch, umschaltbar ohne Neustart. `x:Uid` aktualisiert sich nicht zur
+  Laufzeit → eigener `Localizer` (Core) mit `{x:Bind Loc.Xyz, Mode=OneWay}`; Sprachwechsel löst
+  `PropertyChanged(string.Empty)` aus. Tray-Menü und Toasts wechseln mit (`LanguageChanged`).
+- Daten nur lokal als JSON (System.Text.Json) in `ApplicationData.Current.LocalFolder`, atomar
+  schreiben (Temp-Datei + Ersetzen). Kaputte Dateien nicht stillschweigend überschreiben, sondern sichern.
+- Keine Netzwerkzugriffe: keine Telemetrie, keine Updates aus dem Netz, keine `internetClient`-Capability.
+
+### Technik
+- .NET 10 (LTS), Windows App SDK 2.5.1, WinUI 3, verpackt (MSIX), MVVM mit CommunityToolkit.Mvvm.
+- Projektmappe `Trinkwasser.slnx`:
+  - `src/App` – WinUI 3, UI und Windows-Anbindung
+  - `src/Core` – `net10.0` ohne WinUI: Einstellungen, Prüfung, Arbeitszeiten, Erinnerungsplanung,
+    Statistiken; injizierbare Uhr (`TimeProvider`)
+  - `tests/Core.Tests` – xUnit v3 (bewusst 3.2.2) + `Microsoft.Extensions.TimeProvider.Testing`.
+    Pflicht-Tests: Arbeitszeitgrenzen, Wochenwechsel, Streak über Wochenenden, Zeitumstellung,
+    beste Tageszeit.
+- Paketversionen zentral in `Directory.Packages.props`.
+- Optik: Windows-11-Stil (Mica, NavigationView oder schlichte Seitenstruktur), hell und dunkel.
+- Store: `Package.appxmanifest` mit Platzhaltern für Identity Name/Publisher (aus Partner Center),
+  Logos in allen Skalierungen inkl. `targetsize`/`altform-unplated`, Sprachen de-DE und en-US,
+  Architekturen x64 und arm64.
+- README mit Voraussetzungen, Build-, Test- und Einreichungsanleitung; optional GitHub-Actions-Workflow,
+  der baut, testet und `.msixupload` erzeugt.
+
+## Bauen, testen, ausführen
+
+```powershell
+dotnet test tests/Core.Tests
+dotnet build src/App/App.csproj -p:Platform=x64
+Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\AppxManifest.xml -ForceUpdateFromAnyVersion
+Start-Process "shell:AppsFolder\PLACEHOLDER.Trinkwasser_7pn0cst8w4gvm!App"
+dotnet run tools/gen-icons.cs   # Icons neu erzeugen (aus dem Repo-Wurzelverzeichnis)
+```
+
+Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`), sonst ist die EXE gesperrt.
+Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
+
+## Umgebung und Eigenheiten
+- Visual Studio Community 2026 mit WinUI-Workload, .NET SDK 10.0.401, Entwicklermodus an.
+- Smart App Control ist auf diesem Rechner **aus** (blockierte unsignierte Builds). Hilfsskripte
+  trotzdem ohne eigene EXE ausführen (`#:property UseAppHost=false`).
+- `dotnet` ist in Bash-Sitzungen evtl. nicht im PATH: `export PATH="$PATH:/c/Program Files/dotnet"`.
+- Windows PowerShell 5.1 zerlegt Argumente mit Anführungszeichen: Commit-Nachrichten per Datei
+  übergeben (`git commit -F <datei>`).
+- Assets werden ins Ausgabeverzeichnis kopiert (`CopyToOutputDirectory`), damit die Registrierung
+  direkt aus `bin` funktioniert.
+- Toast-Aktivierung: COM-Server mit CLSID `5260F15E-66CD-45D6-9EC1-5FC32E5E2913` im Manifest;
+  `NotificationInvoked` wird vor `Register()` angehängt; Kaltstart per Toast kommt als
+  `ExtendedActivationKind.AppNotification` über `GetActivatedEventArgs()`.
+
+## Git
+- Commits mit der E-Mail `180740383+1J3R0M3@users.noreply.github.com` (im Repo konfiguriert).
+- **Pushen nur auf Nachfrage.** Es ist noch kein Remote eingerichtet.
+- Commit-Nachrichten auf Deutsch, wie im Electron-Repo.
+- Texte und Kommentare im Code auf Deutsch.
