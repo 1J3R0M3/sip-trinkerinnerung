@@ -43,29 +43,104 @@ installiert der Store als Abhängigkeit selbst.
 GitHub Actions baut dasselbe Paket bei jedem Push auf `main` und hängt es als
 Artefakt an den Workflow-Lauf (`.github/workflows/build.yml`).
 
+**Vorab prüfen (optional):** Windows App Certification Kit (Teil des Windows
+SDK, Feature `OptionId.WindowsSoftwareLogoToolkit`). Version 1.0.0.0 hat alle
+Pflichttests bestanden. Der optionale Test „Blockierte ausführbare Dateien“
+schlägt an, weil in .NET-Laufzeit-DLLs Zeichenfolgen wie „cmd“ oder Aufrufe
+von `CreateProcess` vorkommen; das ist bei self-contained .NET-Apps normal und
+für den Store kein Hindernis.
+
 **Version:** Vor jeder Einreichung `Version` in `src/App/Package.appxmanifest`
 erhöhen. Format `Major.Minor.Build.0` – die letzte Stelle muss 0 sein.
 
-## 3. Einreichung
+## 3. Einreichung Schritt für Schritt
 
-- **Pakete:** die `.msixupload`-Datei hochladen.
-- **Gerätefamilie:** nur Desktop (Windows 11, ab 10.0.22000).
-- **Datenschutzrichtlinie:**
+In Partner Center: **Apps und Spiele → Sip-Trinkerinnerung → Übermittlung
+starten**. Die Abschnitte lassen sich in beliebiger Reihenfolge ausfüllen und
+zwischenspeichern; „An den Store übermitteln“ wird erst aktiv, wenn alle
+vollständig sind.
+
+### 3.1 Preise und Verfügbarkeit
+- **Märkte:** alle Märkte (Standard).
+- **Sichtbarkeit:** für die erste Version **„Privates Publikum“** (nur
+  eingeladene Microsoft-Konten finden die App) oder **„Öffentlich, aber nicht
+  auffindbar“** (nur per Direktlink). Später auf „Öffentlich“ umstellen; das
+  geht ohne neues Paket.
+- **Zeitplan:** „So bald wie möglich“.
+- **Preis:** **Kostenlos**, keine Testversion.
+
+### 3.2 Eigenschaften
+- **Kategorie:** Gesundheit und Fitness (keine Unterkategorie nötig).
+- **Datenschutzrichtlinie (URL):**
   `https://github.com/1J3R0M3/sip-trinkerinnerung/blob/main/PRIVACY.md`
-- **Eingeschränkte Funktion `runFullTrust`.** Begründung, die Partner Center
-  abfragt:
+- **Website:** `https://github.com/1J3R0M3/sip-trinkerinnerung`
+- **Supportkontakt:** E-Mail-Adresse oder
+  `https://github.com/1J3R0M3/sip-trinkerinnerung/issues`
+- **Produkterklärungen:** „Diese App wurde getestet, um die Richtlinien zur
+  Barrierefreiheit zu erfüllen“ darf angehakt werden (Tastatur, Screenreader,
+  Kontrast hell/dunkel geprüft). Alles andere frei lassen.
+- **Systemanforderungen:** leer lassen.
+
+### 3.3 Altersfreigaben
+IARC-Fragebogen, Kategorie **„App (kein Spiel)“**, „Andere“ (keine Social-,
+Browser- oder Messenger-App). Alle Fragen zu Gewalt, Sexualität, Drogen,
+Glücksspiel, Sprache: **Nein**. Nutzer interagieren nicht miteinander, teilen
+keinen Standort, keine Käufe, kein uneingeschränkter Internetzugang: **Nein**.
+Ergebnis ist in der Regel „ab 3 Jahren“ / USK 0.
+
+### 3.4 Pakete
+- `artifacts\AppPackages\App_<version>_x64_arm64_bundle.msixupload` per
+  Drag & Drop hochladen und die Prüfung abwarten (grüner Haken).
+- **Gerätefamilien:** nur **Windows 10/11 Desktop** (ergibt sich aus dem
+  Manifest, ab Windows 11 / 10.0.22000).
+
+### 3.5 Store-Einträge (je Sprache: Deutsch und Englisch)
+Die Sprachen übernimmt Partner Center aus dem Paket. Pro Sprache:
+- **Beschreibung, Kurzbeschreibung, Suchbegriffe:** aus Abschnitt 4 unten.
+- **Produktfunktionen:** die Aufzählungspunkte aus der Beschreibung, einzeln.
+- **Screenshots (Desktop):** aus `artifacts\Screenshots\` (1600 × 900):
+  `de-*.png` für Deutsch, `en-*.png` für Englisch. Reihenfolge wie die
+  Dateinamen. Neu aufnehmen: siehe unten.
+- **Store-Logos:** optional; ohne eigene Logos nimmt der Store die Logos aus
+  dem Paket.
+- **Copyright:** `© 2026 1J3R0M3`
+- Alle übrigen Felder (Trailer, zusätzliche Lizenzbedingungen, Neuerungen in
+  dieser Version) können bei der ersten Version leer bleiben.
+
+### 3.6 Übermittlungsoptionen
+- **Veröffentlichungsoptionen:** „Sobald die Zertifizierung abgeschlossen ist“
+  oder „Manuell veröffentlichen“, wenn du den Zeitpunkt selbst bestimmen willst.
+- **Hinweise zur Zertifizierung** (für die Prüfer, englisch):
+
+  > No account or sign-in required. On first start a short setup wizard asks
+  > for language, goals, reminder interval and working hours. Reminders only
+  > appear during the configured working hours; to test a reminder immediately,
+  > use "Send test notification" on the Overview page or "Test notification"
+  > in the tray menu.
+  > Closing the window keeps the app running in the notification area; use
+  > "Quit" in the tray menu to exit. The app makes no network connections.
+
+- **Eingeschränkte Funktion `runFullTrust`** – Begründung:
 
   > The app is a packaged WinUI 3 desktop application (Windows App SDK). Every
   > packaged desktop (Win32) app declares runFullTrust. The app uses it only to
   > show a notification-area icon, local Windows notifications and an optional
   > startup task. It makes no network connections and stores all data locally.
 
-- **Altersfreigabe:** Fragebogen ausfüllen. Keine Inhalte mit
-  Altersbeschränkung, keine Nutzerinteraktion, keine Käufe.
-- **Screenshots:** mindestens einer, 1366 × 768 oder größer. Sinnvoll:
-  Startseite, Statistik, Einstellungen, eine Erinnerung.
-- **Preis/Verfügbarkeit:** kostenlos. Zum Testen zuerst „Privates Publikum“ oder
-  „Ausgeblendet, nur per Direktlink“ wählen.
+### 3.7 Übermitteln
+**An den Store übermitteln** klicken. Die Zertifizierung dauert meist bis zu
+drei Werktage; den Stand zeigt Partner Center unter der Übermittlung. Bei einer
+Ablehnung steht im Bericht, welche Richtlinie betroffen ist – Paket korrigieren,
+Version erhöhen, neu bauen und dieselbe Übermittlung erneut hochladen.
+
+Nach der Freigabe steht der Store-Link unter **Produktverwaltung →
+Produktidentität** (`https://apps.microsoft.com/detail/<Store-ID>`).
+
+### Screenshots neu aufnehmen
+Mit installierter App spielt ein Hilfsskript Demo-Daten ein, nimmt Übersicht,
+Statistik und Einstellungen in beiden Sprachen hell und dunkel mit 1600 × 900
+auf und stellt danach die eigenen Daten wieder her. Es liegt nicht im Repo;
+bei Bedarf neu erstellen lassen.
 
 ## 4. Store-Eintrag (Texte)
 
