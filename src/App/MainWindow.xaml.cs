@@ -105,7 +105,8 @@ public sealed partial class MainWindow : Window
 
     private void UpdateTexts()
     {
-        Title = Loc.AppName;
+        // Fenstertitel (Taskleiste, Alt+Tab) und Titelleiste: offizieller Name in der App-Sprache.
+        Title = TitleText.Text = Services.AppResources.AppDisplayName(Loc.Language);
         var messages = new List<string>();
         if (App.Current.Settings.BrokenFileBackup is { } settingsBackup) messages.Add(Loc.SettingsBrokenFile(settingsBackup));
         if (App.Current.Drinks.BrokenFileBackup is { } drinksBackup) messages.Add(Loc.DrinksBrokenFile(drinksBackup));

@@ -53,7 +53,7 @@ erhöhen. Format `Major.Minor.Build.0` – die letzte Stelle muss 0 sein.
 - **Pakete:** die `.msixupload`-Datei hochladen.
 - **Gerätefamilie:** nur Desktop (Windows 11, ab 10.0.22000).
 - **Datenschutzrichtlinie:**
-  `https://github.com/1J3R0M3/trinkwasser-winui/blob/main/PRIVACY.md`
+  `https://github.com/1J3R0M3/sip-trinkerinnerung/blob/main/PRIVACY.md`
 - **Eingeschränkte Funktion `runFullTrust`.** Begründung, die Partner Center
   abfragt:
 
