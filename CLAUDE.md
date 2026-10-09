@@ -165,6 +165,8 @@ Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
   werden die Zeilen in den Einstellungen deshalb neu erzeugt, im Assistenten lädt Schritt 3 per `x:Load`.
 - Bei gesperrtem Bildschirm liefern Screenshots nur den Sperrbildschirm; UI Automation
   (PowerShell, `System.Windows.Automation`) funktioniert trotzdem und zeigt die Screenreader-Namen.
+- `PublisherDisplayName` im Manifest muss wörtlich `1J3R0M3` sein: Partner Center lehnt
+  `ms-resource:` dort ab (DisplayName per `ms-resource:` ist erlaubt).
 - Toast-Aktivierung: COM-Server mit CLSID `5260F15E-66CD-45D6-9EC1-5FC32E5E2913` im Manifest;
   `NotificationInvoked` wird vor `Register()` angehängt; Kaltstart per Toast kommt als
   `ExtendedActivationKind.AppNotification` über `GetActivatedEventArgs()`.
