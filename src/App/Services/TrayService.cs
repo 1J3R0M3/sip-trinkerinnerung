@@ -11,17 +11,19 @@ public sealed class TrayService : IDisposable
 {
     private readonly Localizer _loc;
     private readonly TaskbarIcon _icon;
-    private readonly MenuFlyoutItem _open, _test, _quit;
+    private readonly MenuFlyoutItem _open, _settings, _test, _quit;
 
-    public TrayService(Localizer loc, Action open, Action sendTest, Action quit)
+    public TrayService(Localizer loc, Action open, Action openSettings, Action sendTest, Action quit)
     {
         _loc = loc;
         _open = new MenuFlyoutItem { Command = new RelayCommand(open) };
+        _settings = new MenuFlyoutItem { Command = new RelayCommand(openSettings) };
         _test = new MenuFlyoutItem { Command = new RelayCommand(sendTest) };
         _quit = new MenuFlyoutItem { Command = new RelayCommand(quit) };
 
         var menu = new MenuFlyout();
         menu.Items.Add(_open);
+        menu.Items.Add(_settings);
         menu.Items.Add(_test);
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(_quit);
@@ -47,6 +49,7 @@ public sealed class TrayService : IDisposable
     {
         _icon.ToolTipText = _loc.TrayTooltip;
         _open.Text = _loc.TrayOpen;
+        _settings.Text = _loc.TraySettings;
         _test.Text = _loc.TrayTestNotification;
         _quit.Text = _loc.TrayQuit;
     }

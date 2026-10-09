@@ -5,7 +5,8 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  IgnorableNamespaces="uap rescap com desktop">
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  IgnorableNamespaces="uap rescap com desktop uap5">
 
   <!--
     Platzhalter: Name und Publisher stehen in Partner Center unter
@@ -58,6 +59,14 @@
             </com:ExeServer>
           </com:ComServer>
         </com:Extension>
+        <!--
+          Autostart beim Anmelden. Standardmäßig aus; eingeschaltet wird er über
+          StartupTask.RequestEnableAsync (TaskId wie in AutostartService.TaskId).
+          Ein Start über die StartupTask öffnet kein Fenster, die App läuft dann nur im Tray.
+        -->
+        <uap5:Extension Category="windows.startupTask">
+          <uap5:StartupTask TaskId="TrinkwasserStartup" Enabled="false" DisplayName="ms-resource:AppDisplayName" />
+        </uap5:Extension>
       </Extensions>
     </Application>
   </Applications>

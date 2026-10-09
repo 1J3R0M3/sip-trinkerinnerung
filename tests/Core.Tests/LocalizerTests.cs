@@ -67,6 +67,46 @@ public class LocalizerTests
     public void NormalizesLanguage(string? input, string expected) =>
         Assert.Equal(expected, Localizer.Normalize(input));
 
+    [Theory]
+    [InlineData("de", 15, "15 Min.")]
+    [InlineData("de", 60, "1 Std.")]
+    [InlineData("de", 90, "1,5 Std.")]
+    [InlineData("de", 180, "3 Std.")]
+    [InlineData("en", 90, "1.5 h")]
+    [InlineData("en", 45, "45 min")]
+    public void FormatsIntervals(string lang, int minutes, string expected) =>
+        Assert.Equal(expected, Create(lang).Interval(minutes));
+
+    [Fact]
+    public void WeekdaysStartOnMondayInTheAppLanguage()
+    {
+        var loc = Create("de");
+        Assert.Equal("Montag", loc.WeekdayName(0));
+        Assert.Equal("Sonntag", loc.WeekdayName(6));
+        Assert.Equal("Sa", loc.WeekdayName(5, abbreviated: true));
+        loc.SetLanguage("en");
+        Assert.Equal("Monday", loc.WeekdayName(0));
+        Assert.Equal("Monday, start", loc.FieldDayStart(0));
+    }
+
+    [Fact]
+    public void FormatsLiters()
+    {
+        var loc = Create("de");
+        Assert.Equal("= 2,0 l", loc.Liters(2000));
+        Assert.Equal("= 0,25 l", loc.Liters(250));
+        Assert.Equal(string.Empty, loc.Liters(double.NaN));
+        Assert.Equal("Tagesziel (ml)", loc.FieldDailyGoal);
+    }
+
+    [Fact]
+    public void LanguageNamesAreInTheirOwnLanguage()
+    {
+        var loc = Create("en");
+        Assert.Equal("Deutsch", loc.LanguageName("de"));
+        Assert.Equal("English", loc.LanguageName("en"));
+    }
+
     private static HashSet<string> Placeholders(string text) =>
         [.. Regex.Matches(text, @"\{\w+\}").Select(m => m.Value)];
 }

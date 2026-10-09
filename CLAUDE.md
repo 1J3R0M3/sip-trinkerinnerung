@@ -12,8 +12,8 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | Schritt | Inhalt | Status |
 |---|---|---|
 | 1 | Projektgerüst, Single-Instance, Tray, Test-Toast mit beiden Buttons inkl. Aktivierung | ✅ fertig, vom Nutzer getestet |
-| 2 | Einrichtungsassistent, Einstellungen, Sprachwechsel, Autostart | ⏭️ als Nächstes |
-| 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | offen |
+| 2 | Einrichtungsassistent, Einstellungen, Sprachwechsel, Autostart | ✅ gebaut, wartet auf Test durch den Nutzer |
+| 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | ⏭️ als Nächstes |
 | 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | offen |
 
 **Nach jedem Schritt anhalten und auf Feedback des Nutzers warten.** Bei Unklarheiten nachfragen.
@@ -21,6 +21,13 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 Vorläufig aus Schritt 1, in Schritt 3 zu ersetzen: die Liste „Aus Benachrichtigungen empfangen“
 im Hauptfenster (`MainViewModel.ReceivedActions`, Sprachschlüssel `home.actions*` und `action.*`).
 „In 10 Min. erinnern“ wird bisher nur protokolliert, noch nicht geplant.
+
+Entscheidungen aus Schritt 2:
+- Einstellungen speichern sofort (wie die Windows-Einstellungen), ohne Speichern-Button. Ungültige
+  Eingaben werden angezeigt und nicht gespeichert. Der Assistent speichert erst bei „Fertig“,
+  die Sprache schaltet dort aber schon als Vorschau um.
+- `AppSettings.Autostart` ist nur der Wunsch aus dem Assistenten; maßgeblich ist die StartupTask.
+- Unbehandelte Fehler landen lokal in `LocalState\error.log` (nichts wird versendet).
 
 ## Anforderungen
 
@@ -114,6 +121,16 @@ Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
   übergeben (`git commit -F <datei>`).
 - Assets werden ins Ausgabeverzeichnis kopiert (`CopyToOutputDirectory`), damit die Registrierung
   direkt aus `bin` funktioniert.
+- Ändert sich das Manifest (z. B. neue Extension), scheitert `Add-AppxPackage -Register` mit
+  0x80073CFB. Dann erst `Get-AppxPackage PLACEHOLDER.Trinkwasser | Remove-AppxPackage` (löscht LocalState!).
+- `StartupTask.GetAsync` nie direkt auf dem UI-Thread im Loaded-Ereignis aufrufen: WinUI stürzt
+  dann nativ mit 0xC000027B ab (Wiedereintritt). `AutostartService` holt die Task per `Task.Run`.
+- WinUI-Abstürze mit 0xC000027B zeigen sich ohne Debugger nur im Ereignisprotokoll
+  (Anwendung, „Application Error“); zum Eingrenzen helfen Ablaufmarken in `error.log`.
+- TimePicker übernimmt `AutomationProperties.Name` nur beim Aufbau. Nach einem Sprachwechsel
+  werden die Zeilen in den Einstellungen deshalb neu erzeugt, im Assistenten lädt Schritt 3 per `x:Load`.
+- Bei gesperrtem Bildschirm liefern Screenshots nur den Sperrbildschirm; UI Automation
+  (PowerShell, `System.Windows.Automation`) funktioniert trotzdem und zeigt die Screenreader-Namen.
 - Toast-Aktivierung: COM-Server mit CLSID `5260F15E-66CD-45D6-9EC1-5FC32E5E2913` im Manifest;
   `NotificationInvoked` wird vor `Register()` angehängt; Kaltstart per Toast kommt als
   `ExtendedActivationKind.AppNotification` über `GetActivatedEventArgs()`.
