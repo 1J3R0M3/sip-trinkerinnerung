@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Plattformneutrale Logik ohne WinUI-Abhängigkeit: testbar mit xUnit. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Trinkwasser.Core</RootNamespace>
+    <AssemblyName>Trinkwasser.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Locales\*.json" LogicalName="Locales.%(Filename).json" />
+  </ItemGroup>
+</Project>
