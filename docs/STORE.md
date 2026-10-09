@@ -50,8 +50,31 @@ schlägt an, weil in .NET-Laufzeit-DLLs Zeichenfolgen wie „cmd“ oder Aufrufe
 von `CreateProcess` vorkommen; das ist bei self-contained .NET-Apps normal und
 für den Store kein Hindernis.
 
-**Version:** Vor jeder Einreichung `Version` in `src/App/Package.appxmanifest`
-erhöhen. Format `Major.Minor.Build.0` – die letzte Stelle muss 0 sein.
+**Version:** Für ein Update die neue Version mitgeben:
+
+```powershell
+.\tools\Build-StorePackage.ps1 -Version 1.0.1
+```
+
+Das Skript schreibt `1.0.1.0` nach `src/App/Package.appxmanifest` und bricht ab,
+wenn die Version nicht höher ist als die bisherige. Ohne `-Version` wird die
+aktuelle Version neu gebaut (z. B. nach einem abgelehnten Upload, der noch
+nicht eingereicht war). Die Änderung am Manifest danach committen.
+
+## Updates
+
+1. Änderungen testen, dann `.\tools\Build-StorePackage.ps1 -Version <neu>`
+   (Fehlerbehebung: 1.0.0 → 1.0.1, neue Funktionen: 1.0.1 → 1.1.0).
+2. Partner Center: **Apps und Spiele → Sip-Trinkerinnerung → Update**. Die
+   neue Übermittlung übernimmt alle bisherigen Angaben.
+3. Unter **Pakete** das alte Paket entfernen, das neue hochladen.
+4. Optional in den Store-Einträgen „Neuerungen in dieser Version“ ausfüllen und
+   Screenshots tauschen.
+5. Übermitteln. Der Store verteilt das Update nach der Zertifizierung
+   automatisch; Einstellungen und Trinkprotokoll der Nutzer bleiben erhalten.
+
+Texte, Screenshots, Preis und Sichtbarkeit lassen sich auch ohne neues Paket
+ändern (Update ohne Paketwechsel, keine neue Version nötig).
 
 ## 3. Einreichung Schritt für Schritt
 
