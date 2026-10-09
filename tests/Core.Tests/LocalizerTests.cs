@@ -107,6 +107,26 @@ public class LocalizerTests
         Assert.Equal("English", loc.LanguageName("en"));
     }
 
+    [Fact]
+    public void NextReminderSaysTodayTomorrowOrWeekday()
+    {
+        var loc = Create("de");
+        var now = new DateTime(2026, 10, 9, 13, 0, 0); // Freitag
+        Assert.Equal("Nächste Erinnerung: 14:00", loc.HomeNextReminder(now.AddHours(1), now));
+        Assert.Equal("Nächste Erinnerung: morgen, 09:00", loc.HomeNextReminder(new DateTime(2026, 10, 10, 9, 0, 0), now));
+        Assert.Equal("Nächste Erinnerung: Montag, 09:00", loc.HomeNextReminder(new DateTime(2026, 10, 12, 9, 0, 0), now));
+    }
+
+    [Fact]
+    public void StreakAndBestHourTexts()
+    {
+        var loc = Create("de");
+        Assert.Equal("1 Tag", loc.StatsStreakValue(1));
+        Assert.Equal("3 Tage in Folge", loc.StatsStreakValue(3));
+        Assert.Equal("14:00–15:00 Uhr", loc.StatsBestHourValue(14));
+        Assert.Equal("23:00–00:00 Uhr", loc.StatsBestHourValue(23));
+    }
+
     private static HashSet<string> Placeholders(string text) =>
         [.. Regex.Matches(text, @"\{\w+\}").Select(m => m.Value)];
 }

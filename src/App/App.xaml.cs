@@ -3,9 +3,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
 using Trinkwasser.App.Services;
-using Trinkwasser.App.ViewModels;
+using Trinkwasser.Core.Drinks;
 using Trinkwasser.Core.Localization;
 using Trinkwasser.Core.Notifications;
+using Trinkwasser.Core.Reminders;
 using Trinkwasser.Core.Settings;
 using Trinkwasser.Core.Storage;
 using Windows.Storage;
@@ -28,9 +29,11 @@ public partial class App : Application
         DispatcherShutdownMode = DispatcherShutdownMode.OnExplicitShutdown;
         UnhandledException += (_, e) => LogError(e.Exception);
 
-        var store = new JsonFileStore(ApplicationData.Current.LocalFolder.Path, TimeProvider.System);
+        var store = new JsonFileStore(ApplicationData.Current.LocalFolder.Path, Clock);
         Settings = new SettingsService(store, GlobalizationPreferences.Languages.FirstOrDefault());
         Settings.Load();
+        Drinks = new DrinkLog(store, Clock);
+        Drinks.Load();
 
         Loc = new Localizer(Settings.Current.Language, AppResources.AppName);
         // Sprachwechsel ohne Neustart: Fenster, Tray und neue Benachrichtigungen folgen dem Localizer.
@@ -38,16 +41,21 @@ public partial class App : Application
 
         Autostart = new AutostartService();
         Notifications = new NotificationService(Loc);
-        Main = new MainViewModel(Loc, SendTestNotification);
+        Reminders = new ReminderEngine(Clock, () => Settings.Current, () => Drinks.Last?.Time);
+        Settings.Changed += (_, _) => Reminders.Reschedule();
+        DrinkActions = new DrinkActions(Drinks, Reminders, Notifications, Settings);
     }
 
     public static new App Current => (App)Application.Current;
 
+    public TimeProvider Clock { get; } = TimeProvider.System;
     public SettingsService Settings { get; }
+    public DrinkLog Drinks { get; }
     public Localizer Loc { get; }
     public AutostartService Autostart { get; }
     public NotificationService Notifications { get; }
-    public MainViewModel Main { get; }
+    public ReminderEngine Reminders { get; }
+    public DrinkActions DrinkActions { get; }
 
     /// <summary>Das Hauptfenster wurde aktiviert (z. B. nach Rückkehr aus den Windows-Einstellungen).</summary>
     public event EventHandler? WindowActivated;
@@ -59,7 +67,11 @@ public partial class App : Application
         Notifications.ActionInvoked += action => _dispatcher.TryEnqueue(() => HandleToastAction(action));
         Notifications.Register();
 
-        _tray = new TrayService(Loc, ShowWindow, ShowSettings, SendTestNotification, Quit);
+        // Der Takt läuft im Hintergrund; gezeigt wird die Erinnerung auf dem UI-Thread.
+        Reminders.Due += (_, _) => _dispatcher.TryEnqueue(ShowReminder);
+        Reminders.Start();
+
+        _tray = new TrayService(Loc, ShowWindow, ShowSettings, AddGlassFromTray, SendTestNotification, Quit);
 
         // Spätere Starts (zweite Instanz, Startmenü, Benachrichtigung) landen hier.
         AppInstance.GetCurrent().Activated += (_, e) => _dispatcher.TryEnqueue(() => HandleActivation(e));
@@ -88,11 +100,47 @@ public partial class App : Application
 
     private void HandleToastAction(ToastAction action)
     {
-        Main.AddReceived(action, DateTime.Now);
-        if (action == ToastAction.Open) ShowWindow();
+        switch (action)
+        {
+            case ToastAction.Drank:
+                TryAddGlass();
+                break;
+            case ToastAction.Snooze:
+                Reminders.Snooze();
+                break;
+            default:
+                ShowWindow();
+                break;
+        }
     }
 
-    private void SendTestNotification() => Notifications.ShowReminder(Settings.Current.GlassMl);
+    private void ShowReminder()
+    {
+        // Während der Einrichtung noch nicht erinnern.
+        if (Settings.Current.SetupDone) Notifications.ShowReminder(Settings.Current.GlassMl);
+    }
+
+    private void AddGlassFromTray()
+    {
+        if (!TryAddGlass()) ShowWindow();
+    }
+
+    /// <summary>"Getrunken" außerhalb der Startseite. Speicherfehler landen im error.log.</summary>
+    private bool TryAddGlass()
+    {
+        try
+        {
+            DrinkActions.AddGlass();
+            return true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            LogError(e);
+            return false;
+        }
+    }
+
+    internal void SendTestNotification() => Notifications.ShowReminder(Settings.Current.GlassMl);
 
     private void ShowWindow()
     {
@@ -115,7 +163,7 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Schreibt unbehandelte Fehler nach <c>error.log</c> im LocalFolder – nur lokal, nichts wird
+    /// Schreibt Fehler nach <c>error.log</c> im LocalFolder – nur lokal, nichts wird
     /// versendet. Hilft bei Fehlerberichten von Nutzern.
     /// </summary>
     private static void LogError(Exception exception)
@@ -133,6 +181,7 @@ public partial class App : Application
 
     private void Quit()
     {
+        Reminders.Dispose();
         _tray?.Dispose();
         Notifications.Unregister();
         _window?.CloseForExit();

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Trinkwasser.App.Views.StatisticsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Trinkwasser.App.ViewModels"
+    xmlns:local="using:Trinkwasser.App.Views">
+
+    <ScrollViewer>
+        <StackPanel Padding="36,8,36,36" Spacing="12" MaxWidth="720" HorizontalAlignment="Stretch">
+            <TextBlock
+                Text="{x:Bind ViewModel.Loc.StatsTitle, Mode=OneWay}"
+                Style="{StaticResource TitleTextBlockStyle}"
+                AutomationProperties.HeadingLevel="Level1" />
+
+            <!-- Woche wählen -->
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                <Button
+                    Command="{x:Bind ViewModel.PreviousWeekCommand}"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.Loc.StatsPrevWeek, Mode=OneWay}"
+                    AutomationProperties.Name="{x:Bind ViewModel.Loc.StatsPrevWeek, Mode=OneWay}">
+                    <FontIcon Glyph="&#xE76B;" FontSize="14" />
+                </Button>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock
+                        Text="{x:Bind ViewModel.WeekTitle, Mode=OneWay}"
+                        Style="{StaticResource SubtitleTextBlockStyle}"
+                        AutomationProperties.HeadingLevel="Level2" />
+                    <TextBlock Text="{x:Bind ViewModel.WeekRange, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                </StackPanel>
+                <Button
+                    Grid.Column="2"
+                    Content="{x:Bind ViewModel.Loc.StatsThisWeek, Mode=OneWay}"
+                    Command="{x:Bind ViewModel.ThisWeekCommand}" />
+                <Button
+                    Grid.Column="3"
+                    Command="{x:Bind ViewModel.NextWeekCommand}"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.Loc.StatsNextWeek, Mode=OneWay}"
+                    AutomationProperties.Name="{x:Bind ViewModel.Loc.StatsNextWeek, Mode=OneWay}">
+                    <FontIcon Glyph="&#xE76C;" FontSize="14" />
+                </Button>
+            </Grid>
+
+            <!-- Wochenverlauf: eigene Balken. Jeder Tag hat einen Namen für Screenreader, die Grafik selbst nicht. -->
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock
+                        x:Name="ChartHeading"
+                        Text="{x:Bind ViewModel.Loc.StatsChart, Mode=OneWay}"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        AutomationProperties.HeadingLevel="Level3" />
+                    <ItemsControl
+                        HorizontalAlignment="Center"
+                        IsTabStop="False"
+                        ItemsSource="{x:Bind ViewModel.Bars, Mode=OneWay}"
+                        AutomationProperties.LabeledBy="{x:Bind ChartHeading}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:BarItem">
+                                <StackPanel Width="72" Spacing="4" AutomationProperties.Name="{x:Bind AutomationName}">
+                                    <Grid Height="180" AutomationProperties.AccessibilityView="Raw">
+                                        <!-- Erreicht: Akzentfarbe; sonst kräftiges Grau (beides mind. 3:1 zum Hintergrund). -->
+                                        <Rectangle
+                                            Width="32"
+                                            Height="{x:Bind BarHeight}"
+                                            VerticalAlignment="Bottom"
+                                            RadiusX="4"
+                                            RadiusY="4"
+                                            Fill="{ThemeResource ControlStrongFillColorDefaultBrush}"
+                                            Visibility="{x:Bind local:StatisticsPage.NotReached(GoalReached)}" />
+                                        <Rectangle
+                                            Width="32"
+                                            Height="{x:Bind BarHeight}"
+                                            VerticalAlignment="Bottom"
+                                            RadiusX="4"
+                                            RadiusY="4"
+                                            Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                                            Visibility="{x:Bind GoalReached}" />
+                                        <!-- Ziellinie: Abschnitte der Nachbartage ergeben eine durchgehende Linie. -->
+                                        <Rectangle
+                                            Height="2"
+                                            Margin="{x:Bind local:StatisticsPage.GoalMargin(GoalOffset)}"
+                                            VerticalAlignment="Bottom"
+                                            Fill="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </Grid>
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        Text="{x:Bind DayShort}"
+                                        FontWeight="{x:Bind local:StatisticsPage.DayWeight(IsToday)}"
+                                        AutomationProperties.AccessibilityView="Raw" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        Text="{x:Bind ValueText}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        AutomationProperties.AccessibilityView="Raw" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{x:Bind ViewModel.Loc.StatsLegend, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Kennzahlen -->
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.Loc.StatsGoalRate, Mode=OneWay}" Style="{StaticResource HintTextStyle}" AutomationProperties.HeadingLevel="Level3" />
+                        <TextBlock Text="{x:Bind ViewModel.GoalRateText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="{x:Bind ViewModel.GoalRateDetail, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                        <TextBlock Text="{x:Bind ViewModel.DaysReachedText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.Loc.StatsAverage, Mode=OneWay}" Style="{StaticResource HintTextStyle}" AutomationProperties.HeadingLevel="Level3" />
+                        <TextBlock Text="{x:Bind ViewModel.AverageText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Style="{StaticResource HintTextStyle}">
+                            <Run Text="{x:Bind ViewModel.Loc.StatsTotal, Mode=OneWay}" /><Run Text=": " /><Run Text="{x:Bind ViewModel.TotalText, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.Loc.StatsBestHour, Mode=OneWay}" Style="{StaticResource HintTextStyle}" AutomationProperties.HeadingLevel="Level3" />
+                        <TextBlock Text="{x:Bind ViewModel.BestHourText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{x:Bind ViewModel.Loc.StatsStreak, Mode=OneWay}" Style="{StaticResource HintTextStyle}" AutomationProperties.HeadingLevel="Level3" />
+                        <TextBlock Text="{x:Bind ViewModel.StreakText, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <TextBlock Text="{x:Bind ViewModel.Loc.StatsStreakHint, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

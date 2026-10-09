@@ -93,10 +93,68 @@ public sealed partial class Localizer : ObservableObject
 
     public string HomeTestButton => Get("home.testButton");
     public string HomeHint => Get("home.hint");
-    public string HomeActionsHeading => Get("home.actionsHeading");
-    public string HomeActionsEmpty => Get("home.actionsEmpty");
+    public string HomeTodayHeading => Get("home.today.heading");
+    public string HomeWeekHeading => Get("home.week.heading");
+    public string HomeRemindersHeading => Get("home.reminders.heading");
+    public string HomeGoalReached => Get("home.goalReached");
+    public string HomeUndo => Get("home.undo");
+    public string HomeNoReminder => Get("home.noReminder");
+    public string HomeNoWorkToday => Get("home.noWorkToday");
+    public string HomeProgress(int valueMl, int goalMl) => Format("home.progress", ("value", valueMl), ("goal", goalMl));
+    public string HomePercent(int percent) => Format("home.percent", ("percent", percent));
+    public string HomeAddGlass(int amountMl) => Format("home.addGlass", ("amount", amountMl));
+    public string HomeUndoHelp(int amountMl, TimeOnly time) => Format("home.undoHelp", ("amount", amountMl), ("time", Time(time)));
+    public string HomeAdded(int valueMl, int goalMl) => Format("home.added", ("value", valueMl), ("goal", goalMl));
+    public string HomeRemoved(int valueMl, int goalMl) => Format("home.removed", ("value", valueMl), ("goal", goalMl));
+    public string HomeInterval(int minutes) => Format("home.interval", ("interval", Interval(minutes)));
+    public string HomeWorkToday(TimeOnly from, TimeOnly to) => Format("home.today", ("from", Time(from)), ("to", Time(to)));
+
+    /// <summary>"Nächste Erinnerung: 14:00", "…: morgen, 09:00" oder "…: Montag, 09:00".</summary>
+    public string HomeNextReminder(DateTime next, DateTime now)
+    {
+        var time = Time(TimeOnly.FromDateTime(next));
+        var days = DateOnly.FromDateTime(next).DayNumber - DateOnly.FromDateTime(now).DayNumber;
+        var text = days switch
+        {
+            0 => time,
+            1 => $"{Get("home.tomorrow")}, {time}",
+            _ => $"{WeekdayName(Settings.WorkCalendar.DayIndex(next.DayOfWeek))}, {time}",
+        };
+        return Format("home.nextReminder", ("time", text));
+    }
 
     public string NavHome => Get("nav.home");
+    public string NavStatistics => Get("nav.statistics");
+
+    public string StatsTitle => Get("stats.title");
+    public string StatsPrevWeek => Get("stats.prevWeek");
+    public string StatsNextWeek => Get("stats.nextWeek");
+    public string StatsThisWeek => Get("stats.thisWeek");
+    public string StatsChart => Get("stats.chart");
+    public string StatsLegend => Get("stats.legend");
+    public string StatsTotal => Get("stats.total");
+    public string StatsAverage => Get("stats.average");
+    public string StatsBestHour => Get("stats.bestHour");
+    public string StatsStreak => Get("stats.streak");
+    public string StatsStreakHint => Get("stats.streakHint");
+    public string StatsGoalRate => Get("stats.goalRate");
+    public string StatsNoData => Get("stats.noData");
+    public string StatsWeekRange(DateOnly from, DateOnly to) =>
+        Format("stats.weekRange", ("from", from.ToString("d", Culture)), ("to", to.ToString("d", Culture)));
+    public string StatsBar(int dayIndex, int valueMl, int goalMl, bool reached) =>
+        Format(reached ? "stats.barReached" : "stats.bar", ("day", WeekdayName(dayIndex)), ("value", valueMl), ("goal", goalMl));
+    public string StatsBestHourValue(int hour) =>
+        Format("stats.bestHourValue", ("from", Time(new TimeOnly(hour, 0))), ("to", Time(new TimeOnly((hour + 1) % 24, 0))));
+    public string StatsStreakValue(int days) => days == 1 ? Get("stats.streakDay") : Format("stats.streakDays", ("count", days));
+    public string StatsGoalRateValue(int percent) => Format("stats.goalRateValue", ("percent", percent));
+    public string StatsDaysReached(int reached, int total) => Format("stats.daysReached", ("reached", reached), ("total", total));
+    public string Ml(int valueMl) => $"{valueMl.ToString("N0", Culture)} {Get("unit.ml")}";
+
+    public string TrayAddGlass => Get("tray.addGlass");
+    public string ErrorSaveDrink(string reason) => Format("error.saveDrink", ("reason", reason));
+    public string DrinksBrokenFile(string? backupPath) => string.IsNullOrEmpty(backupPath)
+        ? Get("error.drinksBrokenNoBackup")
+        : Format("error.drinksBroken", ("file", Path.GetFileName(backupPath)));
 
     public string CommonBack => Get("common.back");
     public string CommonNext => Get("common.next");

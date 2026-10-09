@@ -12,15 +12,23 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | Schritt | Inhalt | Status |
 |---|---|---|
 | 1 | Projektgerüst, Single-Instance, Tray, Test-Toast mit beiden Buttons inkl. Aktivierung | ✅ fertig, vom Nutzer getestet |
-| 2 | Einrichtungsassistent, Einstellungen, Sprachwechsel, Autostart | ✅ gebaut, wartet auf Test durch den Nutzer |
-| 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | ⏭️ als Nächstes |
-| 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | offen |
+| 2 | Einrichtungsassistent, Einstellungen, Sprachwechsel, Autostart | ✅ gebaut, Test durch den Nutzer läuft |
+| 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | ✅ gebaut, wartet auf Test durch den Nutzer |
+| 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ⏭️ als Nächstes |
 
 **Nach jedem Schritt anhalten und auf Feedback des Nutzers warten.** Bei Unklarheiten nachfragen.
 
-Vorläufig aus Schritt 1, in Schritt 3 zu ersetzen: die Liste „Aus Benachrichtigungen empfangen“
-im Hauptfenster (`MainViewModel.ReceivedActions`, Sprachschlüssel `home.actions*` und `action.*`).
-„In 10 Min. erinnern“ wird bisher nur protokolliert, noch nicht geplant.
+Entscheidungen aus Schritt 3:
+- Erinnerungen: `ReminderScheduler` (reine Berechnung) + `ReminderEngine` (Takt alle 20 s auf dem
+  Thread-Pool). Ein Abstand > 2 min zwischen zwei Takten gilt als Schlaf/verstellte Uhr → neu planen,
+  nicht nachholen (verpasster Termin → jetzt + Intervall). Termin genau zum Arbeitsende entfällt.
+  Snooze außerhalb der Arbeitszeit entfällt. Letzte Erinnerung und Snooze nur im Speicher.
+- Protokoll `drinks.json` mit lokaler Zeit inkl. Offset; Tage werden in lokaler Zeit gezählt.
+- Woche Mo–So. Durchschnitt/Zielerreichung zählen Tage bis heute, davon Arbeitstage und Tage mit
+  Einträgen. Beste Tageszeit = Stunde mit den meisten Gläsern der angezeigten Woche (Gleichstand → früher).
+  Streak ab heute rückwärts; heute bricht nicht, freie Tage brechen nicht, zählen aber, wenn erreicht.
+  Gewertet wird mit den aktuellen Zielen/Arbeitstagen (keine Historie der Einstellungen).
+- „Rückgängig“ auf der Startseite nur für Einträge von heute. Tray hat „+1 Glas“.
 
 Entscheidungen aus Schritt 2:
 - Einstellungen speichern sofort (wie die Windows-Einstellungen), ohne Speichern-Button. Ungültige

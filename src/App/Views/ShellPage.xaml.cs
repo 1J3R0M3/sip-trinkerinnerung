@@ -19,9 +19,12 @@ public sealed partial class ShellPage : Page
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        var page = (args.SelectedItem as NavigationViewItem)?.Tag as string == "settings"
-            ? typeof(SettingsPage)
-            : typeof(HomePage);
+        var page = ((args.SelectedItem as NavigationViewItem)?.Tag as string) switch
+        {
+            "settings" => typeof(SettingsPage),
+            "statistics" => typeof(StatisticsPage),
+            _ => typeof(HomePage),
+        };
         if (ContentFrame.CurrentSourcePageType != page)
             ContentFrame.Navigate(page, null, new SuppressNavigationTransitionInfo());
     }
