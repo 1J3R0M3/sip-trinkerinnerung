@@ -20,7 +20,8 @@
 
   <Properties>
     <DisplayName>ms-resource:AppDisplayName</DisplayName>
-    <PublisherDisplayName>ms-resource:PublisherDisplayName</PublisherDisplayName>
+    <!-- Wörtlich, nicht ms-resource: Partner Center vergleicht den Text direkt. -->
+    <PublisherDisplayName>1J3R0M3</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

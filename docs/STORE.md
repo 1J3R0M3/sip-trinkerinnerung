@@ -25,7 +25,7 @@ Code-Signing-Zertifikat ist nicht nötig.
    | --------------------------------------- | ---------------------------------------- | ----------------------------------------------- |
    | Package/Identity/Name                   | `1J3R0M3.Sip-Trinkerinnerung`            | `Package.appxmanifest` → `Identity Name`        |
    | Package/Identity/Publisher              | `CN=DA341E14-0D55-4F79-AE19-763C3E8DD1B5` | `Package.appxmanifest` → `Identity Publisher`   |
-   | Package/Properties/PublisherDisplayName | `1J3R0M3`                                | beide `Resources.resw` → `PublisherDisplayName` |
+   | Package/Properties/PublisherDisplayName | `1J3R0M3`                                | `Package.appxmanifest` → `PublisherDisplayName` (wörtlich, kein `ms-resource:`) |
 
    Paketfamilie lokal: `1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6`.
 
