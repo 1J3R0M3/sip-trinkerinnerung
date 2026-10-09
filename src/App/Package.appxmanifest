@@ -9,14 +9,14 @@
   IgnorableNamespaces="uap rescap com desktop uap5">
 
   <!--
-    Platzhalter: Name und Publisher stehen in Partner Center unter
-    "Produktidentität" und werden vor der Einreichung hier eingetragen.
+    Name und Publisher aus Partner Center ("Produktidentität"), nicht ändern.
+    Version vor jeder Einreichung erhöhen (letzte Stelle bleibt 0).
     Der angezeigte App-Name steht zentral in Strings/<Sprache>/Resources.resw (AppDisplayName).
   -->
   <Identity
-    Name="PLACEHOLDER.Trinkwasser"
-    Publisher="CN=PLACEHOLDER-PUBLISHER"
-    Version="0.1.0.0" />
+    Name="1J3R0M3.Sip-Trinkerinnerung"
+    Publisher="CN=DA341E14-0D55-4F79-AE19-763C3E8DD1B5"
+    Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>ms-resource:AppDisplayName</DisplayName>
