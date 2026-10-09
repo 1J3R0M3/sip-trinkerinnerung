@@ -95,4 +95,106 @@ public sealed partial class Localizer : ObservableObject
     public string HomeHint => Get("home.hint");
     public string HomeActionsHeading => Get("home.actionsHeading");
     public string HomeActionsEmpty => Get("home.actionsEmpty");
+
+    public string NavHome => Get("nav.home");
+
+    public string CommonBack => Get("common.back");
+    public string CommonNext => Get("common.next");
+    public string CommonFinish => Get("common.finish");
+    public string CommonOn => Get("common.on");
+    public string CommonOff => Get("common.off");
+
+    public string SetupWelcome => Get("setup.welcome");
+    public string SetupStep(int n, int total) => Format("setup.step", ("n", n), ("total", total));
+    public string SetupLanguageHeading => Get("setup.language.heading");
+    public string SetupLanguageText => Get("setup.language.text");
+    public string SetupGoalsHeading => Get("setup.goals.heading");
+    public string SetupGoalsText => Get("setup.goals.text");
+    public string SetupRemindersHeading => Get("setup.reminders.heading");
+    public string SetupRemindersText => Get("setup.reminders.text");
+
+    public string FieldLanguage => Get("field.language");
+    public string FieldDailyGoal => WithUnit("field.dailyGoal");
+    public string FieldWeeklyGoal => WithUnit("field.weeklyGoal");
+    public string FieldGlass => WithUnit("field.glass");
+    public string FieldInterval => Get("field.interval");
+    public string FieldWorkDays => Get("field.workDays");
+    public string FieldWorkTime => Get("field.workTime");
+    public string FieldFrom => Get("field.from");
+    public string FieldTo => Get("field.to");
+    public string FieldAutostart => Get("field.autostart");
+    public string FieldAutostartHint => Get("field.autostartHint");
+    public string FieldOpenStartupSettings => Get("field.openStartupSettings");
+    public string FieldDayStart(int dayIndex) => Format("field.dayStart", ("day", WeekdayName(dayIndex)));
+    public string FieldDayEnd(int dayIndex) => Format("field.dayEnd", ("day", WeekdayName(dayIndex)));
+
+    public string WeeklyGoalSuggestion(int valueMl, int days) =>
+        Format("field.weeklyGoalSuggest", ("value", valueMl), ("days", days));
+
+    public string ErrorTimeRange => Get("error.timeRange");
+    public string ErrorNoWorkDay => Get("error.noWorkDay");
+    public string ErrorRange(int min, int max) => Format("error.range", ("min", min), ("max", max));
+    public string ErrorSave(string reason) => Format("error.save", ("reason", reason));
+
+    public string SettingsTitle => Get("settings.title");
+    public string SettingsGeneral => Get("settings.general");
+    public string SettingsGoals => Get("settings.goals");
+    public string SettingsReminders => Get("settings.reminders");
+    public string SettingsWorkHours => Get("settings.workHours");
+    public string SettingsWorkHoursText => Get("settings.workHoursText");
+    public string SettingsCopyFirst => Get("settings.copyFirst");
+    public string SettingsAutoSave => Get("settings.autoSave");
+    public string SettingsBrokenFile(string? backupPath) => string.IsNullOrEmpty(backupPath)
+        ? Get("settings.brokenFileNoBackup")
+        : Format("settings.brokenFile", ("file", Path.GetFileName(backupPath)));
+
+    public string AutostartStatus(AutostartState state) => state switch
+    {
+        AutostartState.DisabledByUser => Get("autostart.disabledByUser"),
+        AutostartState.DisabledByPolicy => Get("autostart.disabledByPolicy"),
+        AutostartState.EnabledByPolicy => Get("autostart.enabledByPolicy"),
+        AutostartState.Unavailable => Get("autostart.unavailable"),
+        _ => string.Empty,
+    };
+
+    /// <summary>Name der Sprache in ihr selbst ("Deutsch", "English").</summary>
+    public string LanguageName(string language) => Get("language." + Normalize(language));
+
+    /// <summary>Wochentag in der App-Sprache; 0 = Montag … 6 = Sonntag.</summary>
+    public string WeekdayName(int index, bool abbreviated = false)
+    {
+        var day = (DayOfWeek)((index + 1) % 7);
+        var format = Culture.DateTimeFormat;
+        return abbreviated ? format.GetAbbreviatedDayName(day) : format.GetDayName(day);
+    }
+
+    /// <summary>15 → "15 Min.", 60 → "1 Std.", 90 → "1,5 Std." (wie im Prototyp).</summary>
+    public string Interval(int minutes) => minutes switch
+    {
+        _ when minutes % 60 == 0 => Format("unit.hours", ("hours", minutes / 60)),
+        > 60 => Format("unit.hours", ("hours", (minutes / 60.0).ToString("N1", Culture))),
+        _ => Format("unit.minutes", ("minutes", minutes)),
+    };
+
+    /// <summary>2000 → "= 2,0 l", 250 → "= 0,25 l".</summary>
+    public string Liters(double ml) => double.IsFinite(ml) && ml > 0
+        ? Format("unit.liters", ("value", (ml / 1000).ToString("0.0#", Culture)))
+        : string.Empty;
+
+    /// <summary>Uhrzeit kurz in der App-Sprache (de: 17:00, en: 5:00 PM).</summary>
+    public string Time(TimeOnly time) => time.ToString("t", Culture);
+
+    private string WithUnit(string key) => $"{Get(key)} ({Get("unit.ml")})";
+}
+
+/// <summary>Zustand des Autostarts (StartupTask) aus Sicht der Oberfläche.</summary>
+public enum AutostartState
+{
+    Disabled,
+    Enabled,
+    /// <summary>Vom Nutzer in den Windows-Einstellungen ausgeschaltet; nur dort wieder einschaltbar.</summary>
+    DisabledByUser,
+    DisabledByPolicy,
+    EnabledByPolicy,
+    Unavailable,
 }

@@ -7,32 +7,26 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <!-- Eigene Titelleiste, damit Mica bis oben durchgeht. -->
         <Grid x:Name="AppTitleBar" Height="48" Padding="16,0" ColumnSpacing="12" ColumnDefinitions="Auto,*">
-            <Image Source="ms-appx:///Assets/Square44x44Logo.targetsize-16_altform-unplated.png" Width="16" Height="16" VerticalAlignment="Center" />
+            <Image
+                Source="ms-appx:///Assets/Square44x44Logo.targetsize-16_altform-unplated.png"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw" />
             <TextBlock Grid.Column="1" Text="{x:Bind Loc.AppName, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
         </Grid>
 
-        <ScrollViewer Grid.Row="1">
-            <StackPanel Padding="36,8,36,36" Spacing="16" MaxWidth="720" HorizontalAlignment="Left">
-                <TextBlock Text="{x:Bind Loc.AppName, Mode=OneWay}" Style="{StaticResource TitleTextBlockStyle}" />
-                <Button
-                    Style="{StaticResource AccentButtonStyle}"
-                    Content="{x:Bind Loc.HomeTestButton, Mode=OneWay}"
-                    Command="{x:Bind ViewModel.SendTestCommand}" />
-                <TextBlock
-                    Text="{x:Bind Loc.HomeHint, Mode=OneWay}"
-                    TextWrapping="Wrap"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        <!-- Hinweis, wenn die Einstellungsdatei beim Start unlesbar war und gesichert wurde. -->
+        <InfoBar
+            x:Name="BrokenFileBar"
+            Grid.Row="1"
+            Margin="16,0,16,8"
+            Severity="Warning"
+            IsOpen="False" />
 
-                <TextBlock Margin="0,16,0,0" Text="{x:Bind Loc.HomeActionsHeading, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
-                <TextBlock
-                    Text="{x:Bind Loc.HomeActionsEmpty, Mode=OneWay}"
-                    Visibility="{x:Bind ViewModel.HasNoActions, Mode=OneWay}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <ItemsControl ItemsSource="{x:Bind ViewModel.ReceivedActions}" />
-            </StackPanel>
-        </ScrollViewer>
+        <Frame x:Name="RootFrame" Grid.Row="2" />
     </Grid>
 </Window>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="Trinkwasser.App.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Trinkwasser.App.ViewModels">
+
+    <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+            <StackPanel Padding="36,8,36,36" Spacing="8" MaxWidth="820" HorizontalAlignment="Left">
+                <TextBlock
+                    Text="{x:Bind ViewModel.Loc.SettingsTitle, Mode=OneWay}"
+                    Style="{StaticResource TitleTextBlockStyle}"
+                    AutomationProperties.HeadingLevel="Level1" />
+                <TextBlock Text="{x:Bind ViewModel.Loc.SettingsAutoSave, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+
+                <!-- Allgemein -->
+                <TextBlock
+                    Text="{x:Bind ViewModel.Loc.SettingsGeneral, Mode=OneWay}"
+                    Style="{StaticResource SectionHeadingStyle}"
+                    AutomationProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="16">
+                        <RadioButtons
+                            Header="{x:Bind ViewModel.Loc.FieldLanguage, Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.LanguageNames}"
+                            SelectedIndex="{x:Bind ViewModel.SelectedLanguageIndex, Mode=TwoWay}" />
+                        <StackPanel Spacing="4">
+                            <ToggleSwitch
+                                Header="{x:Bind ViewModel.Loc.FieldAutostart, Mode=OneWay}"
+                                OnContent="{x:Bind ViewModel.Loc.CommonOn, Mode=OneWay}"
+                                OffContent="{x:Bind ViewModel.Loc.CommonOff, Mode=OneWay}"
+                                IsOn="{x:Bind ViewModel.Autostart.IsOn, Mode=TwoWay}"
+                                IsEnabled="{x:Bind ViewModel.Autostart.CanToggle, Mode=OneWay}"
+                                AutomationProperties.HelpText="{x:Bind ViewModel.Autostart.StatusText, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind ViewModel.Loc.FieldAutostartHint, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                            <TextBlock
+                                Text="{x:Bind ViewModel.Autostart.StatusText, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.Autostart.HasStatus, Mode=OneWay}"
+                                Style="{StaticResource HintTextStyle}" />
+                            <HyperlinkButton
+                                Padding="0,4"
+                                Content="{x:Bind ViewModel.Loc.FieldOpenStartupSettings, Mode=OneWay}"
+                                Command="{x:Bind ViewModel.Autostart.OpenWindowsSettingsCommand}"
+                                Visibility="{x:Bind ViewModel.Autostart.ShowOpenSettings, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Ziele -->
+                <TextBlock
+                    Text="{x:Bind ViewModel.Loc.SettingsGoals, Mode=OneWay}"
+                    Style="{StaticResource SectionHeadingStyle}"
+                    AutomationProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <NumberBox
+                            Width="280"
+                            HorizontalAlignment="Left"
+                            Header="{x:Bind ViewModel.Loc.FieldDailyGoal, Mode=OneWay}"
+                            Description="{x:Bind ViewModel.DailyLiters, Mode=OneWay}"
+                            Value="{x:Bind ViewModel.DailyGoal, Mode=TwoWay}"
+                            Minimum="{x:Bind ViewModel.DailyMin}"
+                            Maximum="{x:Bind ViewModel.DailyMax}"
+                            SmallChange="250"
+                            LargeChange="1000"
+                            SpinButtonPlacementMode="Compact" />
+                        <StackPanel Spacing="4">
+                            <NumberBox
+                                Width="280"
+                                HorizontalAlignment="Left"
+                                Header="{x:Bind ViewModel.Loc.FieldWeeklyGoal, Mode=OneWay}"
+                                Description="{x:Bind ViewModel.WeeklyLiters, Mode=OneWay}"
+                                Value="{x:Bind ViewModel.WeeklyGoal, Mode=TwoWay}"
+                                Minimum="{x:Bind ViewModel.WeeklyMin}"
+                                Maximum="{x:Bind ViewModel.WeeklyMax}"
+                                SmallChange="250"
+                                LargeChange="1000"
+                                SpinButtonPlacementMode="Compact" />
+                            <HyperlinkButton
+                                Padding="0,4"
+                                Content="{x:Bind ViewModel.SuggestionText, Mode=OneWay}"
+                                Command="{x:Bind ViewModel.ApplySuggestionCommand}"
+                                Visibility="{x:Bind ViewModel.ShowSuggestion, Mode=OneWay}" />
+                        </StackPanel>
+                        <NumberBox
+                            Width="280"
+                            HorizontalAlignment="Left"
+                            Header="{x:Bind ViewModel.Loc.FieldGlass, Mode=OneWay}"
+                            Description="{x:Bind ViewModel.GlassLiters, Mode=OneWay}"
+                            Value="{x:Bind ViewModel.Glass, Mode=TwoWay}"
+                            Minimum="{x:Bind ViewModel.GlassMin}"
+                            Maximum="{x:Bind ViewModel.GlassMax}"
+                            SmallChange="50"
+                            LargeChange="250"
+                            SpinButtonPlacementMode="Compact" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Erinnerungen -->
+                <TextBlock
+                    Text="{x:Bind ViewModel.Loc.SettingsReminders, Mode=OneWay}"
+                    Style="{StaticResource SectionHeadingStyle}"
+                    AutomationProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource CardStyle}">
+                    <ComboBox
+                        MinWidth="200"
+                        Header="{x:Bind ViewModel.Loc.FieldInterval, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.IntervalOptions}"
+                        SelectedIndex="{x:Bind ViewModel.SelectedIntervalIndex, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:IntervalOption">
+                                <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Border>
+
+                <!-- Arbeitszeiten -->
+                <TextBlock
+                    Text="{x:Bind ViewModel.Loc.SettingsWorkHours, Mode=OneWay}"
+                    Style="{StaticResource SectionHeadingStyle}"
+                    AutomationProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{x:Bind ViewModel.Loc.SettingsWorkHoursText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Days, Mode=OneWay}" IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:WorkDayRow">
+                                    <Grid ColumnDefinitions="160,Auto,Auto,Auto" ColumnSpacing="8">
+                                        <CheckBox
+                                            VerticalAlignment="Center"
+                                            Content="{x:Bind Name, Mode=OneWay}"
+                                            IsChecked="{x:Bind Enabled, Mode=TwoWay}" />
+                                        <TimePicker
+                                            Grid.Column="1"
+                                            SelectedTime="{x:Bind Start, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind Enabled, Mode=OneWay}"
+                                            AutomationProperties.Name="{x:Bind StartLabel, Mode=OneWay}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Text="–"
+                                            AutomationProperties.AccessibilityView="Raw" />
+                                        <TimePicker
+                                            Grid.Column="3"
+                                            SelectedTime="{x:Bind End, Mode=TwoWay}"
+                                            IsEnabled="{x:Bind Enabled, Mode=OneWay}"
+                                            AutomationProperties.Name="{x:Bind EndLabel, Mode=OneWay}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button
+                            Margin="0,8,0,0"
+                            Content="{x:Bind ViewModel.Loc.SettingsCopyFirst, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.CopyMondayCommand}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Fehler außerhalb des Scrollbereichs, damit sie immer sichtbar sind. -->
+        <InfoBar
+            Grid.Row="1"
+            Margin="36,0,36,16"
+            Severity="Error"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+            Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+    </Grid>
+</Page>
