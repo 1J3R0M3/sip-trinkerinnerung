@@ -25,6 +25,13 @@
                             Header="{x:Bind ViewModel.Loc.FieldLanguage, Mode=OneWay}"
                             ItemsSource="{x:Bind ViewModel.LanguageNames}"
                             SelectedIndex="{x:Bind ViewModel.SelectedLanguageIndex, Mode=TwoWay}" />
+                        <RadioButtons
+                            Header="{x:Bind ViewModel.Loc.FieldTheme, Mode=OneWay}"
+                            SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=TwoWay}">
+                            <RadioButton Content="{x:Bind ViewModel.ThemeSystemText, Mode=OneWay}" />
+                            <RadioButton Content="{x:Bind ViewModel.ThemeLightText, Mode=OneWay}" />
+                            <RadioButton Content="{x:Bind ViewModel.ThemeDarkText, Mode=OneWay}" />
+                        </RadioButtons>
                         <StackPanel Spacing="4">
                             <ToggleSwitch
                                 Header="{x:Bind ViewModel.Loc.FieldAutostart, Mode=OneWay}"

@@ -22,7 +22,8 @@ public sealed partial class HomeViewModel : ObservableObject, IDisposable
     private readonly TimeProvider _clock;
     private readonly Action _sendTest;
     private readonly DispatcherQueue _dispatcher;
-    private readonly DispatcherQueueTimer _minuteTimer;
+    private readonly DispatcherQueueTimer _timer;
+    private int _lastRefreshMinute = -1;
 
     public HomeViewModel(Localizer loc, SettingsService settings, DrinkLog log, ReminderEngine reminders,
         DrinkActions actions, TimeProvider clock, Action sendTest)
@@ -40,11 +41,12 @@ public sealed partial class HomeViewModel : ObservableObject, IDisposable
         _settings.Changed += OnChanged;
         _log.Changed += OnChanged;
         _reminders.NextChanged += OnNextChanged;
-        // Einmal pro Minute: Tageswechsel um Mitternacht und "morgen"/"heute" in der Erinnerung.
-        _minuteTimer = _dispatcher.CreateTimer();
-        _minuteTimer.Interval = TimeSpan.FromMinutes(1);
-        _minuteTimer.Tick += (_, _) => Refresh();
-        _minuteTimer.Start();
+        // Jede Sekunde den Countdown, jede Minute alles (Tageswechsel, Smiley, "morgen"/"heute").
+        _timer = _dispatcher.CreateTimer();
+        _timer.Interval = TimeSpan.FromSeconds(1);
+        _timer.Tick += (_, _) => OnTick();
+        _timer.Start();
+        FactIndex = Random.Shared.Next(Localizer.FactCount);
     }
 
     public Localizer Loc { get; }
@@ -95,6 +97,38 @@ public sealed partial class HomeViewModel : ObservableObject, IDisposable
 
     public string IntervalText => Loc.HomeInterval(S.IntervalMin);
 
+    // Smiley
+    public Mood Mood => HydrationMood.For(S, TodayMl, Now, Zone);
+    public string MoodText => Loc.MoodText(Mood);
+
+    // Countdown-Kreis: voll, wenn der Termin geplant wurde, leer zur Erinnerung.
+    // Liegt die nächste Erinnerung nicht mehr heute, bleibt der Kreis leer.
+    private Countdown? CurrentCountdown
+    {
+        get
+        {
+            var (next, periodStart) = _reminders.Snapshot;
+            if (next is not { } n || periodStart is not { } p) return null;
+            if (WorkCalendar.LocalDate(n, Zone) != Today) return null;
+            return Countdown.Between(p, n, _clock.GetUtcNow());
+        }
+    }
+
+    public double CountdownValue => (CurrentCountdown?.RemainingFraction ?? 0) * 100;
+    public string CountdownText => CurrentCountdown?.Format() ?? "–";
+    public string CountdownA11y => CurrentCountdown is { } c ? Loc.CountdownA11y(c.Remaining) : Loc.CountdownNone;
+    public string CountdownCaption => CurrentCountdown is null ? Loc.CountdownNone : string.Empty;
+
+    // Wasser-Fakten
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FactText))]
+    public partial int FactIndex { get; private set; }
+
+    public string FactText => Loc.Fact(FactIndex);
+
+    [RelayCommand]
+    private void NextFact() => FactIndex = (FactIndex + 1) % Localizer.FactCount;
+
     [RelayCommand]
     private void AddGlass()
     {
@@ -135,15 +169,28 @@ public sealed partial class HomeViewModel : ObservableObject, IDisposable
     // Kommt vom Timer-Thread der Erinnerungen.
     private void OnNextChanged(object? sender, EventArgs e) => _dispatcher.TryEnqueue(Refresh);
 
+    private void OnTick()
+    {
+        var minute = Now.Minute;
+        if (minute != _lastRefreshMinute)
+        {
+            Refresh();
+            return;
+        }
+        OnPropertyChanged(nameof(CountdownValue));
+        OnPropertyChanged(nameof(CountdownText));
+    }
+
     private void Refresh()
     {
+        _lastRefreshMinute = Now.Minute;
         OnPropertyChanged(string.Empty);
         UndoCommand.NotifyCanExecuteChanged();
     }
 
     public void Dispose()
     {
-        _minuteTimer.Stop();
+        _timer.Stop();
         Loc.LanguageChanged -= OnChanged;
         _settings.Changed -= OnChanged;
         _log.Changed -= OnChanged;

@@ -118,6 +118,15 @@ public class LocalizerTests
     }
 
     [Fact]
+    public void FactsAreNumberedWithoutGapsAndWrapAround()
+    {
+        Assert.Equal(20, Localizer.FactCount);
+        var loc = Create("de");
+        for (var i = 0; i < Localizer.FactCount; i++) Assert.DoesNotContain("fact.", loc.Fact(i));
+        Assert.Equal(loc.Fact(0), loc.Fact(Localizer.FactCount));
+    }
+
+    [Fact]
     public void StreakAndBestHourTexts()
     {
         var loc = Create("de");

@@ -30,6 +30,9 @@ public sealed record AppSettings
     /// </summary>
     public bool Autostart { get; init; }
 
+    /// <summary>Hell, dunkel oder wie Windows (Standard).</summary>
+    public AppTheme Theme { get; init; } = AppTheme.System;
+
     /// <summary>Index 0 = Montag … 6 = Sonntag.</summary>
     public IReadOnlyList<WorkDay> WorkHours { get; init; } = DefaultWorkHours;
 
@@ -48,8 +51,16 @@ public sealed record AppSettings
         && Version == other.Version && SetupDone == other.SetupDone && Language == other.Language
         && DailyGoalMl == other.DailyGoalMl && WeeklyGoalMl == other.WeeklyGoalMl
         && GlassMl == other.GlassMl && IntervalMin == other.IntervalMin && Autostart == other.Autostart
-        && WorkHours.SequenceEqual(other.WorkHours);
+        && Theme == other.Theme && WorkHours.SequenceEqual(other.WorkHours);
 
     public override int GetHashCode() =>
-        HashCode.Combine(SetupDone, Language, DailyGoalMl, WeeklyGoalMl, GlassMl, IntervalMin, Autostart);
+        HashCode.Combine(SetupDone, Language, DailyGoalMl, WeeklyGoalMl, GlassMl, IntervalMin, Autostart, Theme);
+}
+
+/// <summary>Farbschema der App. Gespeichert als "system", "light" oder "dark".</summary>
+public enum AppTheme
+{
+    System,
+    Light,
+    Dark,
 }

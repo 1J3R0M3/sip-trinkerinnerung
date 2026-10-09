@@ -150,6 +150,32 @@ public sealed partial class Localizer : ObservableObject
     public string StatsDaysReached(int reached, int total) => Format("stats.daysReached", ("reached", reached), ("total", total));
     public string Ml(int valueMl) => $"{valueMl.ToString("N0", Culture)} {Get("unit.ml")}";
 
+    public string MoodText(Drinks.Mood mood) => mood switch
+    {
+        Drinks.Mood.GoalReached => Get("mood.goalReached"),
+        Drinks.Mood.OnTrack => Get("mood.onTrack"),
+        Drinks.Mood.Okay => Get("mood.okay"),
+        Drinks.Mood.Behind => Get("mood.behind"),
+        _ => Get("mood.thirsty"),
+    };
+
+    public string CountdownHeading => Get("countdown.heading");
+    public string CountdownNone => Get("countdown.none");
+    public string CountdownA11y(TimeSpan remaining) =>
+        Format("countdown.a11y", ("minutes", (int)Math.Ceiling(remaining.TotalMinutes)));
+
+    public string FactsHeading => Get("facts.heading");
+    public string FactsNext => Get("facts.next");
+
+    /// <summary>Anzahl der Wasser-Fakten (Schlüssel fact.1 … fact.N).</summary>
+    public static int FactCount { get; } = Tables[English].Keys.Count(k => k.StartsWith("fact.", StringComparison.Ordinal));
+
+    /// <summary>Fakt 0 … <see cref="FactCount"/> − 1.</summary>
+    public string Fact(int index) => Get($"fact.{index % FactCount + 1}");
+
+    public string FieldTheme => Get("field.theme");
+    public string ThemeName(Settings.AppTheme theme) => Get("theme." + Settings.SettingsSanitizer.FormatTheme(theme));
+
     public string TrayAddGlass => Get("tray.addGlass");
     public string ErrorSaveDrink(string reason) => Format("error.saveDrink", ("reason", reason));
     public string DrinksBrokenFile(string? backupPath) => string.IsNullOrEmpty(backupPath)

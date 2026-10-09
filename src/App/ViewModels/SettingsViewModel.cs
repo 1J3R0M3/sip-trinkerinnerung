@@ -50,6 +50,7 @@ public sealed partial class SettingsViewModel : FormViewModelBase
         Autostart = new AutostartViewModel(loc, autostart, applyImmediately: true, wish: settings.Current.Autostart);
         // Eine angezeigte Eingabe-Fehlermeldung bleibt dabei stehen.
         Autostart.Applied += (_, on) => Save(s => s with { Autostart = on }, ErrorMessage);
+        SelectedThemeIndex = (int)settings.Current.Theme;
         RefreshSuggestion();
     }
 
@@ -57,6 +58,19 @@ public sealed partial class SettingsViewModel : FormViewModelBase
     public IReadOnlyList<WorkDayRow> Days { get; private set; }
 
     public AutostartViewModel Autostart { get; }
+
+    // Darstellung: Reihenfolge wie AppTheme (System, Hell, Dunkel). Wirkt sofort.
+    [ObservableProperty]
+    public partial int SelectedThemeIndex { get; set; }
+
+    public string ThemeSystemText => Loc.ThemeName(AppTheme.System);
+    public string ThemeLightText => Loc.ThemeName(AppTheme.Light);
+    public string ThemeDarkText => Loc.ThemeName(AppTheme.Dark);
+
+    partial void OnSelectedThemeIndexChanged(int value)
+    {
+        if (value is >= 0 and <= 2) Save(s => s with { Theme = (AppTheme)value }, ErrorMessage);
+    }
 
     private IReadOnlyList<WorkDayRow> CreateRows(IReadOnlyList<WorkDay> days)
     {

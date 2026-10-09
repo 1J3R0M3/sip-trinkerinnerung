@@ -120,6 +120,19 @@ public sealed class ReminderEngineTests : IDisposable
     }
 
     [Fact]
+    public void PeriodCoversTheWholeIntervalOrTheSnooze()
+    {
+        _engine.Start(withTimer: false);
+        Assert.Equal(At(2026, 10, 5, "09:00"), _engine.Next);
+        Assert.Equal(At(2026, 10, 5, "08:00"), _engine.Snapshot.PeriodStart);
+
+        RunUntil(At(2026, 10, 5, "09:00:20"));
+        _engine.Snooze();
+        var (next, start) = _engine.Snapshot;
+        Assert.Equal(TimeSpan.FromMinutes(10), next - start);
+    }
+
+    [Fact]
     public void TimerDrivesThePolling()
     {
         _engine.Start();

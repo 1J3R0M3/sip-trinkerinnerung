@@ -156,6 +156,24 @@ public class SettingsSanitizerTests
     }
 
     [Theory]
+    [InlineData("{\"theme\":\"dark\"}", AppTheme.Dark)]
+    [InlineData("{\"theme\":\"light\"}", AppTheme.Light)]
+    [InlineData("{\"theme\":\"system\"}", AppTheme.System)]
+    [InlineData("{\"theme\":\"Dark\"}", AppTheme.System)]
+    [InlineData("{\"theme\":2}", AppTheme.System)]
+    [InlineData("{}", AppTheme.System)]
+    public void ThemeDefaultsToSystem(string json, AppTheme expected) =>
+        Assert.Equal(expected, SettingsSanitizer.FromJson(json, Defaults).Theme);
+
+    [Fact]
+    public void ThemeRoundTripsAndInvalidValueKeepsPrevious()
+    {
+        var dark = Defaults with { Theme = AppTheme.Dark };
+        Assert.Contains("\"theme\": \"dark\"", SettingsSanitizer.ToJson(dark));
+        Assert.Equal(AppTheme.Dark, SettingsSanitizer.Sanitize(Defaults with { Theme = (AppTheme)42 }, dark).Theme);
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("{kaputt")]
     [InlineData("[1,2,3]")]
