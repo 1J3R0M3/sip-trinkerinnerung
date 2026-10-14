@@ -5,7 +5,7 @@ Microsoft Store als MSIX. Kostenlos, ohne Telemetrie, Daten nur lokal. Ziel: ein
 Menschen im Alltag nutzen – also sorgfältig, barrierearm und robust bauen.
 
 Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lokal unter
-`C:\Users\Jerome\Projekte\trinkwasser-app`, nur als Referenz – Electron-Code nicht übernehmen).
+`E:\Projekte\trinkwasser-app`, nur als Referenz – Electron-Code nicht übernehmen).
 
 ## Stand
 
@@ -35,6 +35,10 @@ Entscheidungen aus Schritt 3:
   Thread-Pool). Ein Abstand > 2 min zwischen zwei Takten gilt als Schlaf/verstellte Uhr → neu planen,
   nicht nachholen (verpasster Termin → jetzt + Intervall). Termin genau zum Arbeitsende entfällt.
   Snooze außerhalb der Arbeitszeit entfällt. Letzte Erinnerung und Snooze nur im Speicher.
+- Ist der eigentliche Termin schon vorbei (App-Start mitten am Tag ohne Glas, geänderte Einstellungen,
+  Aufwachen), zählt das Intervall ab einem festen Zeitpunkt `ReminderState.Since`, nicht ab „jetzt“.
+  Sonst wandert der Termin bei jedem Takt mit und kommt nie (Fehler in 1.0.0). `Reschedule()` setzt
+  `Since`, der Takt (`Poll`) plant, ohne es zu ändern.
 - Protokoll `drinks.json` mit lokaler Zeit inkl. Offset; Tage werden in lokaler Zeit gezählt.
 - Woche Mo–So. Durchschnitt/Zielerreichung zählen Tage bis heute, davon Arbeitstage und Tage mit
   Einträgen. Beste Tageszeit = Stunde mit den meisten Gläsern der angezeigten Woche (Gleichstand → früher).
@@ -148,7 +152,9 @@ Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`), so
 Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
 
 ## Umgebung und Eigenheiten
-- Visual Studio Community 2026 mit WinUI-Workload, .NET SDK 10.0.401, Entwicklermodus an.
+- Visual Studio Community 2026 mit .NET-Desktop-Workload und WinUI-Komponente, .NET SDK 10.0.40x, Entwicklermodus an.
+  Installiert per winget; die WinUI-Komponente heißt in VS 2026 `Microsoft.VisualStudio.Component.WindowsAppSdkSupport.CSharp`.
+- Kein Python auf dem Rechner.
 - Smart App Control ist auf diesem Rechner **aus** (blockierte unsignierte Builds). Hilfsskripte
   trotzdem ohne eigene EXE ausführen (`#:property UseAppHost=false`).
 - `dotnet` ist in Bash-Sitzungen evtl. nicht im PATH: `export PATH="$PATH:/c/Program Files/dotnet"`.

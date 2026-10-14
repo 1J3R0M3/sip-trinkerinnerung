@@ -5,7 +5,13 @@ namespace Trinkwasser.Core.Reminders;
 /// <param name="LastDrink">Letztes Glas: das Intervall startet danach neu.</param>
 /// <param name="LastReminder">Letzte gezeigte Erinnerung: ohne Reaktion folgt die nächste ein Intervall später.</param>
 /// <param name="SnoozeUntil">"In 10 Min. erinnern": ersetzt den nächsten regulären Termin.</param>
-public readonly record struct ReminderState(DateTimeOffset? LastDrink, DateTimeOffset? LastReminder, DateTimeOffset? SnoozeUntil);
+/// <param name="Since">
+/// Ab hier wird gezählt, wenn der eigentliche Termin schon vorbei war (App-Start, geänderte
+/// Einstellungen, Aufwachen). Ohne diesen festen Punkt würde der Termin bei jedem Takt
+/// mitwandern ("jetzt + Intervall") und nie erreicht.
+/// </param>
+public readonly record struct ReminderState(
+    DateTimeOffset? LastDrink, DateTimeOffset? LastReminder, DateTimeOffset? SnoozeUntil, DateTimeOffset? Since = null);
 
 /// <summary>
 /// Berechnet den nächsten Erinnerungstermin (reine Funktion, ohne Uhr und Timer):
@@ -13,7 +19,7 @@ public readonly record struct ReminderState(DateTimeOffset? LastDrink, DateTimeO
 /// <item>Erinnert wird nur innerhalb der Arbeitszeit, ein Termin genau zum Arbeitsende entfällt.</item>
 /// <item>Das Intervall zählt ab Arbeitsbeginn, dem letzten Glas oder der letzten Erinnerung – was zuletzt war.</item>
 /// <item>Ist der Termin schon vorbei (Schlaf, Ruhezustand, App war beendet), wird er nicht nachgeholt:
-///       die nächste Erinnerung kommt ein Intervall nach jetzt.</item>
+///       die nächste Erinnerung kommt ein Intervall nach <see cref="ReminderState.Since"/> (sonst nach jetzt).</item>
 /// <item>Nach Feierabend: nächster Arbeitstag zur Startzeit + Intervall.</item>
 /// </list>
 /// </summary>
@@ -45,7 +51,8 @@ public static class ReminderScheduler
             }
 
             var candidate = anchor + interval;
-            if (candidate <= now) candidate = now + interval;
+            if (candidate <= now)
+                candidate = (state.Since is { } since && since + interval > now ? since : now) + interval;
             if (candidate < end) return candidate;
         }
         return null;

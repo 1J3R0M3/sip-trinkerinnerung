@@ -36,6 +36,16 @@ public class ReminderSchedulerTests
         Assert.Equal(At(2026, 10, 5, "14:30"), next);
     }
 
+    [Fact]
+    public void MissedReminderCountsFromSinceSoTheTermDoesNotWander()
+    {
+        // App um 10:30 gestartet, ohne Glas: der Termin bleibt bei 11:30, auch wenn später neu geplant wird.
+        var since = At(2026, 10, 5, "10:30");
+        var state = new ReminderState(null, null, null, since);
+        Assert.Equal(At(2026, 10, 5, "11:30"), ReminderScheduler.Next(Config(), state, At(2026, 10, 5, "10:30:20"), Berlin));
+        Assert.Equal(At(2026, 10, 5, "11:30"), ReminderScheduler.Next(Config(), state, At(2026, 10, 5, "11:29:40"), Berlin));
+    }
+
     [Theory]
     [InlineData("15:59", "16:59")] // letzte Erinnerung kurz vor Feierabend
     [InlineData("16:00", null)]    // fiele genau auf 17:00 = Arbeitsende → entfällt

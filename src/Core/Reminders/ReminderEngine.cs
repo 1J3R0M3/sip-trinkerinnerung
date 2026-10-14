@@ -27,6 +27,7 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
     private DateTimeOffset? _lastTick;
     private DateTimeOffset? _lastReminder;
     private DateTimeOffset? _snoozeUntil;
+    private DateTimeOffset? _since;
 
     /// <summary>Nächster geplanter Termin; null = keiner in der nächsten Woche (keine Arbeitstage).</summary>
     public DateTimeOffset? Next { get; private set; }
@@ -71,12 +72,21 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
     }
 
     /// <summary>Neu planen, z. B. nach geänderten Einstellungen oder einem gelöschten Glas.</summary>
+    /// <remarks>Ist der eigentliche Termin schon vorbei, zählt das Intervall ab jetzt.</remarks>
     public void Reschedule()
+    {
+        lock (_lock) _since = clock.GetUtcNow();
+        Plan();
+    }
+
+    /// <summary>Plant mit dem bisherigen <see cref="_since"/>, damit der Termin nicht bei jedem Takt mitwandert.</summary>
+    private void Plan()
     {
         bool changed;
         lock (_lock)
         {
-            var next = ReminderScheduler.Next(settings(), new ReminderState(lastDrink(), _lastReminder, _snoozeUntil),
+            var next = ReminderScheduler.Next(settings(),
+                new ReminderState(lastDrink(), _lastReminder, _snoozeUntil, _since),
                 clock.GetUtcNow(), clock.LocalTimeZone);
             changed = next != Next;
             Next = next;
@@ -99,6 +109,7 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
             _lastTick = now;
             // Aufgewacht oder Uhr verstellt: nicht auslösen, nur neu planen. Der Planer legt
             // einen verpassten Termin dann ein Intervall nach jetzt.
+            if (jumped) _since = now;
             due = !jumped && Next is { } next && now >= next;
             if (due)
             {
@@ -106,7 +117,7 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
                 _snoozeUntil = null;
             }
         }
-        Reschedule();
+        Plan();
         if (due) Due?.Invoke(this, EventArgs.Empty);
     }
 
