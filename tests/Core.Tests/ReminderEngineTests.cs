@@ -82,6 +82,36 @@ public sealed class ReminderEngineTests : IDisposable
 
         Assert.Single(_shown);
         Assert.Equal(At(2026, 10, 5, "14:30"), _engine.Next);
+
+        // Danach geht es normal weiter: der Termin wandert nicht mit jedem Takt mit.
+        RunUntil(At(2026, 10, 5, "14:31"));
+        Assert.Equal(2, _shown.Count);
+        Assert.Equal(At(2026, 10, 5, "14:30"), _shown[1], TimeSpan.FromSeconds(20));
+    }
+
+    [Fact]
+    public void StartedDuringWorkWithoutDrinkRemindsAfterOneInterval()
+    {
+        // Mittags gestartet, heute noch kein Glas (Fehler bis 1.0.0: der Termin wanderte mit und kam nie).
+        _clock.SetUtcNow(At(2026, 10, 5, "10:30").ToUniversalTime());
+        _engine.Start(withTimer: false);
+        RunUntil(At(2026, 10, 5, "12:31"));
+
+        Assert.Equal(2, _shown.Count);
+        Assert.Equal(At(2026, 10, 5, "11:30"), _shown[0], TimeSpan.FromSeconds(20));
+        Assert.Equal(At(2026, 10, 5, "12:30"), _shown[1], TimeSpan.FromSeconds(20));
+    }
+
+    [Fact]
+    public void LastDrinkLongAgoStillLeadsToAReminder()
+    {
+        _lastDrink = At(2026, 10, 2, "16:00");
+        _clock.SetUtcNow(At(2026, 10, 5, "13:10").ToUniversalTime());
+        _engine.Start(withTimer: false);
+        RunUntil(At(2026, 10, 5, "14:11"));
+
+        Assert.Single(_shown);
+        Assert.Equal(At(2026, 10, 5, "14:10"), _shown[0], TimeSpan.FromSeconds(20));
     }
 
     [Fact]
@@ -117,6 +147,8 @@ public sealed class ReminderEngineTests : IDisposable
         _engine.Reschedule();
         // 8:00 + 15 min liegt schon zurück (jetzt 8:30) → ein Intervall nach jetzt.
         Assert.Equal(At(2026, 10, 5, "08:45"), _engine.Next);
+        RunUntil(At(2026, 10, 5, "08:46"));
+        Assert.Single(_shown);
     }
 
     [Fact]
