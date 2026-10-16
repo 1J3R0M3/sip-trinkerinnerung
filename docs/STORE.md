@@ -63,8 +63,14 @@ nicht eingereicht war). Die Änderung am Manifest danach committen.
 
 ## Updates
 
-1. Änderungen testen, dann `.\tools\Build-StorePackage.ps1 -Version <neu>`
-   (Fehlerbehebung: 1.0.0 → 1.0.1, neue Funktionen: 1.0.1 → 1.1.0).
+1. Änderungen testen, dann `.\tools\Build-StorePackage.ps1 -Version <neu>`.
+   Versionsschema **MAJOR.MINOR.PATCH** (dreistellig, so auch in Einstellungen → Info):
+   - PATCH (rechts) bei Fehlerbehebungen: 1.2.0 → 1.2.1
+   - MINOR (Mitte) bei neuen Funktionen, PATCH zurück auf 0: 1.2.1 → 1.3.0
+   - MAJOR (links) bei großen Änderungen, Rest auf 0: 1.3.0 → 2.0.0
+
+   Im Manifest steht die Version vierstellig mit 0 am Ende (1.2.0 → `1.2.0.0`),
+   weil MSIX vier Stellen braucht und der Store die letzte auf 0 verlangt.
 2. Partner Center: **Apps und Spiele → Sip-Trinkerinnerung → Update**. Die
    neue Übermittlung übernimmt alle bisherigen Angaben.
 3. Unter **Pakete** das alte Paket entfernen, das neue hochladen.
