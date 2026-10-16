@@ -55,6 +55,38 @@
   </ItemGroup>
 
   <!--
+    Debug-Builds bekommen eine eigene Paketkennung "Sip (Dev)": So laufen sie neben der
+    Store-Version, ohne deren Daten (LocalState) zu berühren. Auch die COM-Kennung für Klicks
+    auf Benachrichtigungen ist eine andere, sonst landen die Klicks bei der falschen App.
+    Das Manifest im Repo und Release-Builds (Store) bleiben unverändert.
+  -->
+  <Target Name="_UseDevPackageIdentity" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <_DevManifest>$(IntermediateOutputPath)Package.Dev.appxmanifest</_DevManifest>
+      <_DevName>Sip (Dev)</_DevName>
+      <_DevClsid>9462ACA1-A4A1-42C1-BA06-3D23D574EBB0</_DevClsid>
+      <_ManifestNs>
+        &lt;Namespace Prefix="m" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10" /&gt;
+        &lt;Namespace Prefix="uap" Uri="http://schemas.microsoft.com/appx/manifest/uap/windows10" /&gt;
+        &lt;Namespace Prefix="uap5" Uri="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" /&gt;
+        &lt;Namespace Prefix="desktop" Uri="http://schemas.microsoft.com/appx/manifest/desktop/windows10" /&gt;
+        &lt;Namespace Prefix="com" Uri="http://schemas.microsoft.com/appx/manifest/com/windows10" /&gt;
+      </_ManifestNs>
+    </PropertyGroup>
+    <Copy SourceFiles="Package.appxmanifest" DestinationFiles="$(_DevManifest)" />
+    <XmlPoke XmlInputPath="$(_DevManifest)" Namespaces="$(_ManifestNs)" Query="/m:Package/m:Identity/@Name" Value="1J3R0M3.Sip-Trinkerinnerung.Dev" />
+    <XmlPoke XmlInputPath="$(_DevManifest)" Namespaces="$(_ManifestNs)" Query="/m:Package/m:Properties/m:DisplayName" Value="$(_DevName)" />
+    <XmlPoke XmlInputPath="$(_DevManifest)" Namespaces="$(_ManifestNs)" Query="//uap:VisualElements/@DisplayName" Value="$(_DevName)" />
+    <XmlPoke XmlInputPath="$(_DevManifest)" Namespaces="$(_ManifestNs)" Query="//uap5:StartupTask/@DisplayName" Value="$(_DevName)" />
+    <XmlPoke XmlInputPath="$(_DevManifest)" Namespaces="$(_ManifestNs)" Query="//desktop:ToastNotificationActivation/@ToastActivatorCLSID" Value="$(_DevClsid)" />
+    <XmlPoke XmlInputPath="$(_DevManifest)" Namespaces="$(_ManifestNs)" Query="//com:Class/@Id" Value="$(_DevClsid)" />
+    <ItemGroup>
+      <AppxManifest Remove="@(AppxManifest)" />
+      <AppxManifest Include="$(_DevManifest)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
     Das Metapaket Microsoft.WindowsAppSDK (auch über H.NotifyIcon) bringt Windows ML mit
     (onnxruntime, DirectML, je Architektur rund 40 MB). Die App nutzt kein ML – nicht mitkopieren.
   -->
