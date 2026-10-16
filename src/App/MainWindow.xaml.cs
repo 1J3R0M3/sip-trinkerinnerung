@@ -17,11 +17,12 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
         AppWindow.SetIcon("Assets/AppIcon.ico");
-        AppWindow.Resize(new Windows.Graphics.SizeInt32(960, 720));
+        AppWindow.Resize(new Windows.Graphics.SizeInt32(1100, 720));
         if (AppWindow.Presenter is OverlappedPresenter overlapped)
         {
-            // Darunter passen die Arbeitszeiten (zwei Uhrzeitfelder pro Zeile) nicht mehr nebeneinander.
-            overlapped.PreferredMinimumWidth = 860;
+            // Darunter passen die Arbeitszeiten (zwei Uhrzeitfelder pro Zeile) neben der
+            // Bereichsliste der Einstellungen nicht mehr nebeneinander.
+            overlapped.PreferredMinimumWidth = 1040;
             overlapped.PreferredMinimumHeight = 560;
         }
         UpdateTexts();

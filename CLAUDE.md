@@ -34,6 +34,14 @@ Entscheidungen aus Schritt 6 (Töne):
 - Töne: CC0-Hörproben von Freesound (`-hq.mp3`) in `artifacts/sounds-raw`, aufbereitet mit
   `tools/process-sounds.cs` (NAudio; Mono, Stille weg, max. 3 s, Lautheit angeglichen, 16-Bit-WAV).
   Herkunft in `src/App/Assets/Sounds/LICENSES.md`.
+- Einstellungen in sechs Bereichen links (ListView, Panels per Sichtbarkeit): Allgemein, Ziele,
+  Erinnerungen, Arbeitszeiten, Töne, Info. Info zeigt Version (`AppInfo`, Paketversion; „Entwicklerversion“
+  bei `.Dev`), Links zu GitHub/Datenschutz und Lizenzen aus `Core/About/Credits` (nur was im Paket
+  landet; neue Pakete/Töne dort ergänzen, Test prüft Töne). Windows App SDK: Microsoft-Lizenz, nicht MIT.
+- Fenster 1100 × 720, Mindestbreite 1040; Hauptnavigation klappt erst ab 1400 px auf
+  (`ExpandedModeThresholdWidth`), sonst passen die Arbeitszeiten neben die Bereichsliste nicht.
+- Startseite: Hinweis „Autostart ist aus“ (eigenes `AutostartViewModel`, `ShowOffHint`) mit „Autostart
+  einschalten“ bzw. Link zu den Windows-Einstellungen, wenn dort ausgeschaltet.
 
 Entscheidungen aus Schritt 5:
 - Smiley (`HydrationMood`): vergleicht mit dem Soll für die Uhrzeit (linear über die Arbeitszeit,
