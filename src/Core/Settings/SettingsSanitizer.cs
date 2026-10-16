@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Trinkwasser.Core.Localization;
+using Trinkwasser.Core.Sounds;
 
 namespace Trinkwasser.Core.Settings;
 
@@ -29,6 +30,9 @@ public static class SettingsSanitizer
         IntervalMin = SettingsLimits.IntervalMin.Clamp(input.IntervalMin, previous.IntervalMin),
         Autostart = input.Autostart,
         Theme = Enum.IsDefined(input.Theme) ? input.Theme : previous.Theme,
+        ReminderSound = SoundCatalog.IsKnown(input.ReminderSound) ? input.ReminderSound : previous.ReminderSound,
+        SnoozeSound = SoundCatalog.IsKnown(input.SnoozeSound) ? input.SnoozeSound : previous.SnoozeSound,
+        GoalSound = SoundCatalog.IsKnown(input.GoalSound) ? input.GoalSound : previous.GoalSound,
         WorkHours = input.WorkHours is { Count: 7 } days
             ? [.. days.Select((d, i) => SanitizeDay(d.Enabled, d.Start, d.End, previous.WorkHours[i]))]
             : previous.WorkHours,
@@ -55,6 +59,17 @@ public static class SettingsSanitizer
             Autostart = Bool(o["autostart"]) ?? defaults.Autostart,
             Theme = ParseTheme(Text(o["theme"])) ?? defaults.Theme,
         };
+
+        // Fehlt "sounds" (Einstellungen vor 1.2) oder ist ein Ton unbekannt, gilt der Standard.
+        if (o["sounds"] is JsonObject sounds)
+        {
+            result = result with
+            {
+                ReminderSound = Sound(sounds["reminder"]) ?? defaults.ReminderSound,
+                SnoozeSound = Sound(sounds["snooze"]) ?? defaults.SnoozeSound,
+                GoalSound = Sound(sounds["goal"]) ?? defaults.GoalSound,
+            };
+        }
 
         if (o["workHours"] is JsonArray { Count: 7 } days)
         {
@@ -88,6 +103,12 @@ public static class SettingsSanitizer
             ["intervalMin"] = s.IntervalMin,
             ["autostart"] = s.Autostart,
             ["theme"] = FormatTheme(s.Theme),
+            ["sounds"] = new JsonObject
+            {
+                ["reminder"] = s.ReminderSound,
+                ["snooze"] = s.SnoozeSound,
+                ["goal"] = s.GoalSound,
+            },
             ["workHours"] = new JsonArray([.. s.WorkHours.Select(d => (JsonNode)new JsonObject
             {
                 ["enabled"] = d.Enabled,
@@ -133,6 +154,8 @@ public static class SettingsSanitizer
 
     private static string? Text(JsonNode? node) =>
         node is JsonValue v && v.TryGetValue<string>(out var s) ? s : null;
+
+    private static string? Sound(JsonNode? node) => Text(node) is { } id && SoundCatalog.IsKnown(id) ? id : null;
 
     // Wie Number() im Prototyp: Zahlen und Zahlen als Text werden akzeptiert.
     private static double Number(JsonNode? node)

@@ -6,6 +6,8 @@ Windows-Benachrichtigung ans Wassertrinken. „Getrunken“ zählt ein Glas,
 
 - Erinnerungen im Wunschintervall, nur während der Arbeitszeit (pro Wochentag)
 - Tages- und Wochenziel mit Fortschritt, „+1 Glas“ und „Rückgängig“
+- Eigene Töne je Anlass (Erinnerung, erneute Erinnerung, Tagesziel erreicht):
+  13 Wasser- und Glasgeräusche, Windows-Standard oder lautlos, mit Probehören
 - Statistik: Wochenverlauf, Durchschnitt, beste Tageszeit, Serie, Zielerreichung
 - Deutsch und Englisch, umschaltbar ohne Neustart
 - Optionaler Autostart, dann nur im Infobereich
@@ -31,15 +33,22 @@ Store als MSIX. Nachfolger des Electron-Prototyps
 dotnet test tests/Core.Tests
 dotnet build src/App/App.csproj -p:Platform=x64
 Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\AppxManifest.xml -ForceUpdateFromAnyVersion
-Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6!App"
+Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung.Dev_984vmrdge06s6!App"
 ```
 
+- Debug-Builds heißen **„Sip (Dev)“** und haben eine eigene Paketkennung
+  (`1J3R0M3.Sip-Trinkerinnerung.Dev`) mit eigenen Daten. So laufen sie neben der
+  Store-Version, ohne deren Einstellungen und Protokoll anzufassen. Release-Builds
+  (Store) behalten die echte Kennung. Umgesetzt im Target `_UseDevPackageIdentity`
+  in `src/App/App.csproj`.
 - Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`),
   sonst ist die EXE gesperrt.
 - Ändert sich das Manifest, scheitert die Registrierung mit 0x80073CFB. Dann
-  erst `Get-AppxPackage 1J3R0M3.Sip-Trinkerinnerung | Remove-AppxPackage` – das
-  löscht auch die App-Daten.
+  erst `Get-AppxPackage 1J3R0M3.Sip-Trinkerinnerung.Dev | Remove-AppxPackage` – das
+  löscht auch die Daten der Dev-Version (nie die Store-Version entfernen).
 - Icons neu erzeugen: `dotnet run tools/gen-icons.cs` (aus dem Wurzelverzeichnis).
+- Töne neu aufbereiten: `dotnet run tools/process-sounds.cs`, Quellen und Lizenzen
+  in `src/App/Assets/Sounds/LICENSES.md`.
 
 ## Store-Paket und Einreichung
 
@@ -63,7 +72,7 @@ und hängt das `.msixupload` als Artefakt an den Workflow-Lauf.
 | `src/Core`         | `net10.0` ohne WinUI: Einstellungen mit Prüfung, Arbeitszeiten, Erinnerungsplanung, Trink-Protokoll, Statistik, Texte (de/en). Uhr über `TimeProvider`, daher gut testbar. |
 | `src/App`          | WinUI 3: Fenster, Seiten, ViewModels (CommunityToolkit.Mvvm), Tray (H.NotifyIcon), Benachrichtigungen, Autostart, Single-Instance. |
 | `tests/Core.Tests` | xUnit v3, u. a. Arbeitszeitgrenzen, Wochenwechsel, Serie über Wochenenden, Zeitumstellung, beste Tageszeit. |
-| `tools`            | Icon-Generator, Store-Build-Skript. |
+| `tools`            | Icon-Generator, Aufbereitung der Töne, Store-Build-Skript. |
 
 Der angezeigte App-Name steht nur in `src/App/Strings/*/Resources.resw`
 (`AppDisplayName`); alle anderen Stellen lesen ihn von dort.
@@ -79,4 +88,5 @@ Ordner.
 
 ## Lizenz
 
-[MIT](LICENSE)
+[MIT](LICENSE). Die Benachrichtigungstöne stammen von Freesound und sind
+gemeinfrei (CC0), siehe [LICENSES.md](src/App/Assets/Sounds/LICENSES.md).
