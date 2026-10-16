@@ -16,9 +16,13 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | ✅ gebaut, wartet auf Test durch den Nutzer |
 | 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ✅ gebaut, Workflow noch nie auf GitHub gelaufen |
 | 5 | Design: Smiley, Countdown-Kreis, Wasser-Fakten, Hell/Dunkel/System | ✅ gebaut, wartet auf Feedback |
-| 6 | Benachrichtigungstöne (Branch `feature/benachrichtigungstoene`, wird Version 1.2) | ✅ gebaut und getestet, wartet auf Test durch den Nutzer |
+| 6 | Benachrichtigungstöne, Einstellungen in Bereichen, Info mit Version und Lizenzen (Version 1.2.0) | ✅ gebaut und getestet, in main |
 
-Store: 1.0.0 veröffentlicht, 1.0.1 (Erinnerungs-Fix) gebaut und eingereicht.
+Store: 1.0.0 veröffentlicht, 1.0.1 (Erinnerungs-Fix) eingereicht, 1.2.0 (Töne, neue Einstellungen) gebaut.
+
+Versionen (vom Nutzer festgelegt): dreistellig **MAJOR.MINOR.PATCH** – PATCH (rechts) für Bugfixes,
+MINOR (Mitte) für Features, MAJOR (links) für große Änderungen. Im Manifest vierstellig mit `.0`
+(Store-Pflicht), angezeigt dreistellig. Bauen mit `.\tools\Build-StorePackage.ps1 -Version x.y.z`.
 
 Entscheidungen aus Schritt 6 (Töne):
 - Drei Anlässe (`SoundOccasion`): Erinnerung, erneute Erinnerung nach Snooze (`ReminderKind.Snooze`
