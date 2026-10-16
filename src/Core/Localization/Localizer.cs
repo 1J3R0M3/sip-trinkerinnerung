@@ -90,6 +90,40 @@ public sealed partial class Localizer : ObservableObject
     public string ToastBody(int amountMl) => Format("toast.body", ("amount", amountMl));
     public string ToastDrank => Get("toast.drank");
     public string ToastSnooze(int minutes) => Format("toast.snooze", ("minutes", minutes));
+    public string ToastGoalTitle => Get("toast.goalTitle");
+    public string ToastGoalBody(int amountMl) => Format("toast.goalBody", ("amount", amountMl));
+
+    public string SettingsCategories => Get("settings.categories");
+    public string SettingsInfo => Get("settings.info");
+    public string InfoVersion(string version) => Format("info.version", ("version", version));
+    public string InfoDevBuild => Get("info.devBuild");
+    public string InfoSourceCode => Get("info.sourceCode");
+    public string InfoPrivacy => Get("info.privacy");
+    public string InfoLicenses => Get("info.licenses");
+    public string InfoLicensesText => Get("info.licensesText");
+    public string InfoLibraries => Get("info.libraries");
+    public string InfoSounds => Get("info.sounds");
+    public string InfoCredit(string license, string author) => Format("info.credit", ("license", LicenseName(license)), ("author", author));
+    public string InfoOpenLink(string name) => Format("info.openLink", ("name", name));
+    public string LicenseName(string id) => Get("license." + id);
+
+    public string HomeAutostartOffTitle => Get("home.autostartOffTitle");
+    public string HomeAutostartOffText => Get("home.autostartOffText");
+    public string HomeAutostartEnable => Get("home.autostartEnable");
+
+    public string SettingsSounds => Get("settings.sounds");
+    public string SettingsSoundsText => Get("settings.soundsText");
+    public string SoundPlay => Get("sound.play");
+    public string SoundName(string id) => Get("sound." + id);
+
+    public string SoundOccasionName(Sounds.SoundOccasion occasion) => occasion switch
+    {
+        Sounds.SoundOccasion.Snooze => Format("sound.occasion.snooze", ("minutes", Notifications.ToastArguments.SnoozeMinutes)),
+        Sounds.SoundOccasion.GoalReached => Get("sound.occasion.goal"),
+        _ => Get("sound.occasion.reminder"),
+    };
+
+    public string SoundPlayFor(Sounds.SoundOccasion occasion) => Format("sound.playFor", ("occasion", SoundOccasionName(occasion)));
 
     public string HomeTestButton => Get("home.testButton");
     public string HomeHint => Get("home.hint");

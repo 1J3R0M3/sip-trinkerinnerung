@@ -1,8 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Trinkwasser.App.Services;
+using Trinkwasser.Core.About;
 using Trinkwasser.Core.Localization;
 using Trinkwasser.Core.Settings;
+using Trinkwasser.Core.Sounds;
 
 namespace Trinkwasser.App.ViewModels;
 
@@ -42,11 +44,17 @@ public sealed partial class SettingsViewModel : FormViewModelBase
     private readonly SettingsService _settings;
     private bool _bulkChange;
 
-    public SettingsViewModel(Localizer loc, SettingsService settings, AutostartService autostart)
+    public SettingsViewModel(Localizer loc, SettingsService settings, AutostartService autostart, SoundPreview preview)
         : base(loc, settings.Current)
     {
         _settings = settings;
         Days = CreateRows(settings.Current.WorkHours);
+        // Eine angezeigte Eingabe-Fehlermeldung bleibt beim Speichern eines Tons stehen.
+        Sounds = [.. Enum.GetValues<SoundOccasion>().Select(o =>
+            new SoundRow(loc, preview, o, settings.Current.Sound(o), (occasion, id) => Save(s => s.WithSound(occasion, id), ErrorMessage)))];
+        AppCredit = new CreditItem(loc, Credits.App);
+        LibraryCredits = [.. Credits.Libraries.Select(c => new CreditItem(loc, c))];
+        SoundCredits = [.. SoundCatalog.SipSounds.Select(id => new CreditItem(loc, Credits.Sounds[id], () => loc.SoundName(id)))];
         Autostart = new AutostartViewModel(loc, autostart, applyImmediately: true, wish: settings.Current.Autostart);
         // Eine angezeigte Eingabe-Fehlermeldung bleibt dabei stehen.
         Autostart.Applied += (_, on) => Save(s => s with { Autostart = on }, ErrorMessage);
@@ -58,6 +66,22 @@ public sealed partial class SettingsViewModel : FormViewModelBase
     public IReadOnlyList<WorkDayRow> Days { get; private set; }
 
     public AutostartViewModel Autostart { get; }
+
+    /// <summary>Ein Ton je Anlass (Erinnerung, erneute Erinnerung, Tagesziel).</summary>
+    public IReadOnlyList<SoundRow> Sounds { get; }
+
+    // Info: Version und Lizenzen.
+    public string VersionText => Loc.InfoVersion(AppInfo.Version) + (AppInfo.IsDevBuild ? $" · {Loc.InfoDevBuild}" : string.Empty);
+
+    public CreditItem AppCredit { get; }
+    public IReadOnlyList<CreditItem> LibraryCredits { get; }
+    public IReadOnlyList<CreditItem> SoundCredits { get; }
+
+    [RelayCommand]
+    private Task OpenSourceCode() => AppInfo.OpenAsync(Credits.RepositoryUrl);
+
+    [RelayCommand]
+    private Task OpenPrivacy() => AppInfo.OpenAsync(Credits.PrivacyUrl);
 
     // Darstellung: Reihenfolge wie AppTheme (System, Hell, Dunkel). Wirkt sofort.
     [ObservableProperty]
@@ -167,6 +191,8 @@ public sealed partial class SettingsViewModel : FormViewModelBase
         Days = CreateRows([.. Days.Select(r => r.ToWorkDay(current[r.Index]))]);
         base.OnLanguageChanged(sender, e);
         Autostart.RefreshTexts();
+        foreach (var row in Sounds) row.RefreshTexts();
+        foreach (var credit in (CreditItem[])[AppCredit, .. LibraryCredits, .. SoundCredits]) credit.RefreshTexts();
         // Fehlermeldung in der neuen Sprache.
         if (HasError) SaveForm();
     }

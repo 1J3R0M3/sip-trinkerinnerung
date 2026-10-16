@@ -5,15 +5,84 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:Trinkwasser.App.ViewModels">
 
-    <Grid RowDefinitions="*,Auto">
-        <ScrollViewer>
-            <StackPanel Padding="36,8,36,36" Spacing="8" MaxWidth="820" HorizontalAlignment="Left">
-                <TextBlock
-                    Text="{x:Bind ViewModel.Loc.SettingsTitle, Mode=OneWay}"
-                    Style="{StaticResource TitleTextBlockStyle}"
-                    AutomationProperties.HeadingLevel="Level1" />
-                <TextBlock Text="{x:Bind ViewModel.Loc.SettingsAutoSave, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+    <Page.Resources>
+        <!-- Eintrag der Lizenzliste: Name, Lizenz · Urheber, Link zur Quelle. -->
+        <DataTemplate x:Key="CreditTemplate" x:DataType="vm:CreditItem">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
+                    <TextBlock Text="{x:Bind Details, Mode=OneWay}" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+                <HyperlinkButton
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Command="{x:Bind OpenCommand}"
+                    ToolTipService.ToolTip="{x:Bind OpenName, Mode=OneWay}"
+                    AutomationProperties.Name="{x:Bind OpenName, Mode=OneWay}">
+                    <FontIcon Glyph="&#xE8A7;" FontSize="14" />
+                </HyperlinkButton>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
 
+    <!-- Links die Bereiche (wie in den Windows-Einstellungen), rechts nur der gewählte. -->
+    <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="200,*">
+        <StackPanel Grid.ColumnSpan="2" Padding="36,8,36,8" Spacing="4">
+            <TextBlock
+                Text="{x:Bind ViewModel.Loc.SettingsTitle, Mode=OneWay}"
+                Style="{StaticResource TitleTextBlockStyle}"
+                AutomationProperties.HeadingLevel="Level1" />
+            <TextBlock Text="{x:Bind ViewModel.Loc.SettingsAutoSave, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+        </StackPanel>
+
+        <ListView
+            x:Name="Categories"
+            Grid.Row="1"
+            Margin="24,8,0,0"
+            SelectionMode="Single"
+            SelectionChanged="OnCategoryChanged"
+            AutomationProperties.Name="{x:Bind ViewModel.Loc.SettingsCategories, Mode=OneWay}">
+            <ListViewItem AutomationProperties.Name="{x:Bind ViewModel.Loc.SettingsGeneral, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xE713;" FontSize="16" />
+                    <TextBlock Text="{x:Bind ViewModel.Loc.SettingsGeneral, Mode=OneWay}" />
+                </StackPanel>
+            </ListViewItem>
+            <ListViewItem AutomationProperties.Name="{x:Bind ViewModel.Loc.SettingsGoals, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xE7C1;" FontSize="16" />
+                    <TextBlock Text="{x:Bind ViewModel.Loc.SettingsGoals, Mode=OneWay}" />
+                </StackPanel>
+            </ListViewItem>
+            <ListViewItem AutomationProperties.Name="{x:Bind ViewModel.Loc.SettingsReminders, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xEA8F;" FontSize="16" />
+                    <TextBlock Text="{x:Bind ViewModel.Loc.SettingsReminders, Mode=OneWay}" />
+                </StackPanel>
+            </ListViewItem>
+            <ListViewItem AutomationProperties.Name="{x:Bind ViewModel.Loc.SettingsWorkHours, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xE823;" FontSize="16" />
+                    <TextBlock Text="{x:Bind ViewModel.Loc.SettingsWorkHours, Mode=OneWay}" />
+                </StackPanel>
+            </ListViewItem>
+            <ListViewItem AutomationProperties.Name="{x:Bind ViewModel.Loc.SettingsSounds, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xE767;" FontSize="16" />
+                    <TextBlock Text="{x:Bind ViewModel.Loc.SettingsSounds, Mode=OneWay}" />
+                </StackPanel>
+            </ListViewItem>
+            <ListViewItem AutomationProperties.Name="{x:Bind ViewModel.Loc.SettingsInfo, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xE946;" FontSize="16" />
+                    <TextBlock Text="{x:Bind ViewModel.Loc.SettingsInfo, Mode=OneWay}" />
+                </StackPanel>
+            </ListViewItem>
+        </ListView>
+
+        <ScrollViewer x:Name="ContentScroller" Grid.Row="1" Grid.Column="1">
+            <Grid Padding="24,0,36,36" MaxWidth="820" HorizontalAlignment="Stretch">
+                <StackPanel x:Name="GeneralPanel" Spacing="8">
                 <!-- Allgemein -->
                 <TextBlock
                     Text="{x:Bind ViewModel.Loc.SettingsGeneral, Mode=OneWay}"
@@ -54,6 +123,9 @@
                     </StackPanel>
                 </Border>
 
+                </StackPanel>
+
+                <StackPanel x:Name="GoalsPanel" Spacing="8" Visibility="Collapsed">
                 <!-- Ziele -->
                 <TextBlock
                     Text="{x:Bind ViewModel.Loc.SettingsGoals, Mode=OneWay}"
@@ -104,6 +176,9 @@
                     </StackPanel>
                 </Border>
 
+                </StackPanel>
+
+                <StackPanel x:Name="RemindersPanel" Spacing="8" Visibility="Collapsed">
                 <!-- Erinnerungen -->
                 <TextBlock
                     Text="{x:Bind ViewModel.Loc.SettingsReminders, Mode=OneWay}"
@@ -123,6 +198,54 @@
                     </ComboBox>
                 </Border>
 
+                </StackPanel>
+
+                <StackPanel x:Name="SoundsPanel" Spacing="8" Visibility="Collapsed">
+                <!-- Töne -->
+                <TextBlock
+                    Text="{x:Bind ViewModel.Loc.SettingsSounds, Mode=OneWay}"
+                    Style="{StaticResource SectionHeadingStyle}"
+                    AutomationProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds}" IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="12" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SoundRow">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <ComboBox
+                                            MinWidth="240"
+                                            Header="{x:Bind Name, Mode=OneWay}"
+                                            ItemsSource="{x:Bind Options}"
+                                            SelectedIndex="{x:Bind SelectedIndex, Mode=TwoWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:SoundOption">
+                                                    <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <Button
+                                            VerticalAlignment="Bottom"
+                                            Command="{x:Bind PlayCommand}"
+                                            ToolTipService.ToolTip="{x:Bind PlayLabel, Mode=OneWay}"
+                                            AutomationProperties.Name="{x:Bind PlayName, Mode=OneWay}">
+                                            <FontIcon Glyph="&#xE768;" FontSize="14" />
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{x:Bind ViewModel.Loc.SettingsSoundsText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                    </StackPanel>
+                </Border>
+
+                </StackPanel>
+
+                <StackPanel x:Name="WorkHoursPanel" Spacing="8" Visibility="Collapsed">
                 <!-- Arbeitszeiten -->
                 <TextBlock
                     Text="{x:Bind ViewModel.Loc.SettingsWorkHours, Mode=OneWay}"
@@ -139,7 +262,7 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:WorkDayRow">
-                                    <Grid ColumnDefinitions="160,Auto,Auto,Auto" ColumnSpacing="8">
+                                    <Grid ColumnDefinitions="130,Auto,Auto,Auto" ColumnSpacing="8">
                                         <CheckBox
                                             VerticalAlignment="Center"
                                             Content="{x:Bind Name, Mode=OneWay}"
@@ -169,12 +292,65 @@
                             Command="{x:Bind ViewModel.CopyMondayCommand}" />
                     </StackPanel>
                 </Border>
-            </StackPanel>
+                </StackPanel>
+
+                <!-- Info: Version und Lizenzen -->
+                <StackPanel x:Name="InfoPanel" Spacing="8" Visibility="Collapsed">
+                    <TextBlock
+                        Text="{x:Bind ViewModel.Loc.SettingsInfo, Mode=OneWay}"
+                        Style="{StaticResource SectionHeadingStyle}"
+                        AutomationProperties.HeadingLevel="Level2" />
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{x:Bind ViewModel.Loc.AppName, Mode=OneWay}" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock Text="{x:Bind ViewModel.VersionText, Mode=OneWay}" IsTextSelectionEnabled="True" />
+                            <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="8">
+                                <HyperlinkButton Content="{x:Bind ViewModel.Loc.InfoSourceCode, Mode=OneWay}" Command="{x:Bind ViewModel.OpenSourceCodeCommand}" />
+                                <HyperlinkButton Content="{x:Bind ViewModel.Loc.InfoPrivacy, Mode=OneWay}" Command="{x:Bind ViewModel.OpenPrivacyCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock
+                        Text="{x:Bind ViewModel.Loc.InfoLicenses, Mode=OneWay}"
+                        Style="{StaticResource SectionHeadingStyle}"
+                        AutomationProperties.HeadingLevel="Level2" />
+                    <TextBlock Text="{x:Bind ViewModel.Loc.InfoLicensesText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" TextWrapping="Wrap" />
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel Spacing="12">
+                            <ContentControl Content="{x:Bind ViewModel.AppCredit}" ContentTemplate="{StaticResource CreditTemplate}" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" IsTabStop="False" />
+                            <TextBlock
+                                Text="{x:Bind ViewModel.Loc.InfoLibraries, Mode=OneWay}"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level3" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.LibraryCredits}" ItemTemplate="{StaticResource CreditTemplate}" IsTabStop="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                            <TextBlock
+                                Text="{x:Bind ViewModel.Loc.InfoSounds, Mode=OneWay}"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                AutomationProperties.HeadingLevel="Level3" />
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.SoundCredits}" ItemTemplate="{StaticResource CreditTemplate}" IsTabStop="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Spacing="8" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
 
         <!-- Fehler außerhalb des Scrollbereichs, damit sie immer sichtbar sind. -->
         <InfoBar
-            Grid.Row="1"
+            Grid.Row="2"
+            Grid.ColumnSpan="2"
             Margin="36,0,36,16"
             Severity="Error"
             IsClosable="False"
