@@ -31,8 +31,25 @@ public sealed partial class AutostartViewModel : ObservableObject
     public event EventHandler<bool>? Applied;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanToggle), nameof(StatusText), nameof(HasStatus), nameof(ShowOpenSettings))]
+    [NotifyPropertyChangedFor(nameof(CanToggle), nameof(StatusText), nameof(HasStatus), nameof(ShowOpenSettings), nameof(ShowOffHint), nameof(CanEnableHere))]
     public partial AutostartState State { get; private set; } = AutostartState.Disabled;
+
+    /// <summary>Erst nach dem ersten <see cref="RefreshAsync"/> ist der Zustand aus Windows bekannt.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowOffHint))]
+    public partial bool IsKnown { get; private set; }
+
+    /// <summary>
+    /// Hinweis auf der Startseite: Ohne Autostart läuft nach dem Windows-Start nichts, bis die App
+    /// geöffnet wird. Nicht bei Richtlinien oder unverpackt – dort kann der Nutzer nichts tun.
+    /// </summary>
+    public bool ShowOffHint => IsKnown && State is AutostartState.Disabled or AutostartState.DisabledByUser;
+
+    /// <summary>Direkt einschaltbar; nach "in Windows ausgeschaltet" geht es nur über die Windows-Einstellungen.</summary>
+    public bool CanEnableHere => State == AutostartState.Disabled;
+
+    [RelayCommand]
+    private void Enable() => IsOn = true;
 
     [ObservableProperty]
     public partial bool IsOn { get; set; }
@@ -54,6 +71,7 @@ public sealed partial class AutostartViewModel : ObservableObject
     public async Task RefreshAsync()
     {
         State = await _service.GetStateAsync();
+        IsKnown = true;
         // Im Assistenten bleibt der Wunsch stehen, solange Windows das Umschalten erlaubt.
         if (_applyImmediately || !CanToggle) SetIsOnSilently(IsActive(State));
     }

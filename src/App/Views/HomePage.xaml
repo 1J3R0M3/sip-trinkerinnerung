@@ -13,6 +13,27 @@
                     Style="{StaticResource TitleTextBlockStyle}"
                     AutomationProperties.HeadingLevel="Level1" />
 
+                <!-- Ohne Autostart läuft nach dem Windows-Start nichts, bis die App geöffnet wird. -->
+                <InfoBar
+                    Severity="Informational"
+                    IsClosable="False"
+                    IsOpen="{x:Bind Autostart.ShowOffHint, Mode=OneWay}"
+                    Title="{x:Bind ViewModel.Loc.HomeAutostartOffTitle, Mode=OneWay}"
+                    Message="{x:Bind ViewModel.Loc.HomeAutostartOffText, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            Content="{x:Bind ViewModel.Loc.HomeAutostartEnable, Mode=OneWay}"
+                            Command="{x:Bind Autostart.EnableCommand}"
+                            IsEnabled="{x:Bind Autostart.CanToggle, Mode=OneWay}"
+                            Visibility="{x:Bind Autostart.CanEnableHere, Mode=OneWay}" />
+                    </InfoBar.ActionButton>
+                    <HyperlinkButton
+                        Padding="0,0,0,8"
+                        Content="{x:Bind ViewModel.Loc.FieldOpenStartupSettings, Mode=OneWay}"
+                        Command="{x:Bind Autostart.OpenWindowsSettingsCommand}"
+                        Visibility="{x:Bind Autostart.ShowOpenSettings, Mode=OneWay}" />
+                </InfoBar>
+
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                     <!-- Heute: Smiley, Fortschritt, Buttons -->
                     <Border Style="{StaticResource CardStyle}">
