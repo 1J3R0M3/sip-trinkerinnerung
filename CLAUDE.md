@@ -16,6 +16,36 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | 3 | Erinnerungslogik, Fortschritt, Statistiken inkl. Tests | ✅ gebaut, wartet auf Test durch den Nutzer |
 | 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ✅ gebaut, Workflow noch nie auf GitHub gelaufen |
 | 5 | Design: Smiley, Countdown-Kreis, Wasser-Fakten, Hell/Dunkel/System | ✅ gebaut, wartet auf Feedback |
+| 6 | Benachrichtigungstöne, Einstellungen in Bereichen, Info mit Version und Lizenzen (Version 1.2.0) | ✅ gebaut und getestet, in main |
+
+Store: 1.0.0 veröffentlicht, 1.0.1 (Erinnerungs-Fix) eingereicht, 1.2.0 (Töne, neue Einstellungen) gebaut.
+
+Versionen (vom Nutzer festgelegt): dreistellig **MAJOR.MINOR.PATCH** – PATCH (rechts) für Bugfixes,
+MINOR (Mitte) für Features, MAJOR (links) für große Änderungen. Im Manifest vierstellig mit `.0`
+(Store-Pflicht), angezeigt dreistellig. Bauen mit `.\tools\Build-StorePackage.ps1 -Version x.y.z`.
+
+Entscheidungen aus Schritt 6 (Töne):
+- Drei Anlässe (`SoundOccasion`): Erinnerung, erneute Erinnerung nach Snooze (`ReminderKind.Snooze`
+  aus `ReminderEngine.Due`), „Tagesziel erreicht“ (neue Benachrichtigung ohne Buttons).
+- Je Anlass ein Ton aus `SoundCatalog`: 13 Sip-Töne, `windows` (Standard, kein audio-Element) oder
+  `silent` (`MuteAudio`). JSON `sounds: { reminder, snooze, goal }`; fehlt es (Dateien vor 1.2) oder
+  ist ein Ton unbekannt → Standard (drop / quick-pour / glass-ping).
+- Ton hängt an der Benachrichtigung (`SetAudioUri("ms-appx:///Assets/Sounds/<id>.wav")`); Probehören
+  in den Einstellungen per `MediaPlayer` (`SoundPreview`), „Windows-Standard“ liest den Ton aus
+  `HKCU\AppEvents\Schemes\Apps\.Default\Notification.Default\.Current`.
+- „Tagesziel erreicht“ (`DailyGoalNotice`): nur wenn genau dieses Glas das Ziel überschreitet, höchstens
+  einmal am Tag (nur im Speicher gemerkt).
+- Töne: CC0-Hörproben von Freesound (`-hq.mp3`) in `artifacts/sounds-raw`, aufbereitet mit
+  `tools/process-sounds.cs` (NAudio; Mono, Stille weg, max. 3 s, Lautheit angeglichen, 16-Bit-WAV).
+  Herkunft in `src/App/Assets/Sounds/LICENSES.md`.
+- Einstellungen in sechs Bereichen links (ListView, Panels per Sichtbarkeit): Allgemein, Ziele,
+  Erinnerungen, Arbeitszeiten, Töne, Info. Info zeigt Version (`AppInfo`, Paketversion; „Entwicklerversion“
+  bei `.Dev`), Links zu GitHub/Datenschutz und Lizenzen aus `Core/About/Credits` (nur was im Paket
+  landet; neue Pakete/Töne dort ergänzen, Test prüft Töne). Windows App SDK: Microsoft-Lizenz, nicht MIT.
+- Fenster 1100 × 720, Mindestbreite 1040; Hauptnavigation klappt erst ab 1400 px auf
+  (`ExpandedModeThresholdWidth`), sonst passen die Arbeitszeiten neben die Bereichsliste nicht.
+- Startseite: Hinweis „Autostart ist aus“ (eigenes `AutostartViewModel`, `ShowOffHint`) mit „Autostart
+  einschalten“ bzw. Link zu den Windows-Einstellungen, wenn dort ausgeschaltet.
 
 Entscheidungen aus Schritt 5:
 - Smiley (`HydrationMood`): vergleicht mit dem Soll für die Uhrzeit (linear über die Arbeitszeit,
@@ -142,7 +172,7 @@ Code-Namespace `Trinkwasser.*`, `Trinkwasser.exe` und der Repo-Name sind intern 
 dotnet test tests/Core.Tests
 dotnet build src/App/App.csproj -p:Platform=x64
 Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\AppxManifest.xml -ForceUpdateFromAnyVersion
-Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6!App"
+Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung.Dev_984vmrdge06s6!App"   # Debug = "Sip (Dev)"
 dotnet run tools/gen-icons.cs   # Icons neu erzeugen (aus dem Repo-Wurzelverzeichnis)
 .\tools\Build-StorePackage.ps1   # Store-Paket → artifacts\AppPackages\*.msixupload
 .\tools\Build-StorePackage.ps1 -Version 1.0.1   # Store-Update: Version im Manifest erhöhen + bauen
@@ -155,6 +185,13 @@ Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
 - Visual Studio Community 2026 mit .NET-Desktop-Workload und WinUI-Komponente, .NET SDK 10.0.40x, Entwicklermodus an.
   Installiert per winget; die WinUI-Komponente heißt in VS 2026 `Microsoft.VisualStudio.Component.WindowsAppSdkSupport.CSharp`.
 - Kein Python auf dem Rechner.
+- **Die Store-Version von Sip ist auf diesem Rechner installiert und wird benutzt.** Nie in ihren Datenordner
+  (`…\Packages\1J3R0M3.Sip-Trinkerinnerung_984vmrdge06s6\LocalState`) schreiben und das Paket nie entfernen.
+  Debug-Builds heißen „Sip (Dev)“ mit eigener Kennung `1J3R0M3.Sip-Trinkerinnerung.Dev` und eigener
+  Toast-CLSID (Target `_UseDevPackageIdentity` im App.csproj); Testdaten nur in deren LocalState.
+- Dateibasierte C#-Skripte: zentrale Paketversionen gelten auch dort (`#:package Name` ohne Version,
+  Version in `Directory.Packages.props`); für COM (z. B. NAudio/Media Foundation)
+  `#:property PublishAot=false` und `#:property BuiltInComInteropSupport=true`.
 - Smart App Control ist auf diesem Rechner **aus** (blockierte unsignierte Builds). Hilfsskripte
   trotzdem ohne eigene EXE ausführen (`#:property UseAppHost=false`).
 - `dotnet` ist in Bash-Sitzungen evtl. nicht im PATH: `export PATH="$PATH:/c/Program Files/dotnet"`.
@@ -163,7 +200,8 @@ Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
 - Assets werden ins Ausgabeverzeichnis kopiert (`CopyToOutputDirectory`), damit die Registrierung
   direkt aus `bin` funktioniert.
 - Ändert sich das Manifest (z. B. neue Extension), scheitert `Add-AppxPackage -Register` mit
-  0x80073CFB. Dann erst `Get-AppxPackage 1J3R0M3.Sip-Trinkerinnerung | Remove-AppxPackage` (löscht LocalState!).
+  0x80073CFB. Dann erst `Get-AppxPackage 1J3R0M3.Sip-Trinkerinnerung.Dev | Remove-AppxPackage` (löscht LocalState der Dev-Version;
+  nie das Store-Paket ohne `.Dev` entfernen!).
 - `StartupTask.GetAsync` nie direkt auf dem UI-Thread im Loaded-Ereignis aufrufen: WinUI stürzt
   dann nativ mit 0xC000027B ab (Wiedereintritt). `AutostartService` holt die Task per `Task.Run`.
 - WinUI-Abstürze mit 0xC000027B zeigen sich ohne Debugger nur im Ereignisprotokoll

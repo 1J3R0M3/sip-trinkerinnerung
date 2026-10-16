@@ -63,8 +63,14 @@ nicht eingereicht war). Die Änderung am Manifest danach committen.
 
 ## Updates
 
-1. Änderungen testen, dann `.\tools\Build-StorePackage.ps1 -Version <neu>`
-   (Fehlerbehebung: 1.0.0 → 1.0.1, neue Funktionen: 1.0.1 → 1.1.0).
+1. Änderungen testen, dann `.\tools\Build-StorePackage.ps1 -Version <neu>`.
+   Versionsschema **MAJOR.MINOR.PATCH** (dreistellig, so auch in Einstellungen → Info):
+   - PATCH (rechts) bei Fehlerbehebungen: 1.2.0 → 1.2.1
+   - MINOR (Mitte) bei neuen Funktionen, PATCH zurück auf 0: 1.2.1 → 1.3.0
+   - MAJOR (links) bei großen Änderungen, Rest auf 0: 1.3.0 → 2.0.0
+
+   Im Manifest steht die Version vierstellig mit 0 am Ende (1.2.0 → `1.2.0.0`),
+   weil MSIX vier Stellen braucht und der Store die letzte auf 0 verlangt.
 2. Partner Center: **Apps und Spiele → Sip-Trinkerinnerung → Update**. Die
    neue Übermittlung übernimmt alle bisherigen Angaben.
 3. Unter **Pakete** das alte Paket entfernen, das neue hochladen.
@@ -181,6 +187,8 @@ auf „Getrunken“ wird es gezählt, mit „In 10 Min. erinnern“ verschoben.
 - Tages- und Wochenziel mit Fortschrittsanzeige
 - Ein Smiley zeigt auf einen Blick, ob du für die Uhrzeit genug getrunken hast
 - Countdown-Kreis bis zur nächsten Erinnerung
+- Eigene Töne für Erinnerung, erneute Erinnerung und „Tagesziel erreicht“ –
+  Wassertropfen, Glas-Klirren, Plätschern und mehr, oder lautlos
 - Statistik: Wochenverlauf, Tagesdurchschnitt, beste Tageszeit, Serie
 - Wissenswertes rund ums Wasser auf der Startseite
 - Hell, dunkel oder wie Windows
@@ -205,6 +213,8 @@ glass of water at your chosen interval. Click "Done" to log it or "Remind me in
 - Daily and weekly goals with progress
 - A smiley shows at a glance whether you're on track for the time of day
 - Countdown ring until the next reminder
+- Your own sounds for reminders, repeat reminders and "daily goal reached" –
+  water drops, glass clinks, pouring and more, or silent
 - Statistics: weekly history, daily average, best time of day, streak
 - Water facts on the home page
 - Light, dark or system theme

@@ -2,6 +2,13 @@ using Trinkwasser.Core.Settings;
 
 namespace Trinkwasser.Core.Reminders;
 
+/// <summary>Reguläre Erinnerung oder die nach "In 10 Min. erinnern" (eigener Ton).</summary>
+public enum ReminderKind
+{
+    Regular,
+    Snooze,
+}
+
 /// <summary>
 /// Plant die Erinnerungen und meldet, wann eine fällig ist. Ein kurzer Takt prüft regelmäßig;
 /// so fällt auf, wenn der Rechner geschlafen hat oder die Uhr verstellt wurde (der Abstand
@@ -44,8 +51,8 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
         }
     }
 
-    /// <summary>Eine Erinnerung ist fällig (Hintergrund-Thread).</summary>
-    public event EventHandler? Due;
+    /// <summary>Eine Erinnerung ist fällig (Hintergrund-Thread), regulär oder nach "In 10 Min. erinnern".</summary>
+    public event EventHandler<ReminderKind>? Due;
 
     /// <summary><see cref="Next"/> hat sich geändert (Hintergrund- oder aufrufender Thread).</summary>
     public event EventHandler? NextChanged;
@@ -103,6 +110,7 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
     {
         var now = clock.GetUtcNow();
         bool due;
+        var kind = ReminderKind.Regular;
         lock (_lock)
         {
             var jumped = _lastTick is { } last && (now < last || now - last > JumpThreshold);
@@ -113,12 +121,13 @@ public sealed class ReminderEngine(TimeProvider clock, Func<AppSettings> setting
             due = !jumped && Next is { } next && now >= next;
             if (due)
             {
+                if (Next == _snoozeUntil) kind = ReminderKind.Snooze;
                 _lastReminder = now;
                 _snoozeUntil = null;
             }
         }
         Plan();
-        if (due) Due?.Invoke(this, EventArgs.Empty);
+        if (due) Due?.Invoke(this, kind);
     }
 
     public void Dispose() => _timer?.Dispose();

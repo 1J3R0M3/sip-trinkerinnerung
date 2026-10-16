@@ -11,6 +11,7 @@
         IsSettingsVisible="False"
         PaneDisplayMode="Auto"
         OpenPaneLength="240"
+        ExpandedModeThresholdWidth="1400"
         SelectionChanged="OnSelectionChanged">
         <NavigationView.MenuItems>
             <NavigationViewItem x:Name="HomeItem" Tag="home" Content="{x:Bind Loc.NavHome, Mode=OneWay}">

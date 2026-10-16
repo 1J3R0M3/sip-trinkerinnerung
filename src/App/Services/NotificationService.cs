@@ -2,6 +2,7 @@ using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using Trinkwasser.Core.Localization;
 using Trinkwasser.Core.Notifications;
+using Trinkwasser.Core.Sounds;
 
 namespace Trinkwasser.App.Services;
 
@@ -30,22 +31,45 @@ public sealed class NotificationService(Localizer loc)
 
     public void Unregister() => AppNotificationManager.Default.Unregister();
 
-    public void ShowReminder(int glassMl)
+    /// <param name="sound">Id aus <see cref="SoundCatalog"/>.</param>
+    public void ShowReminder(int glassMl, string sound)
     {
-        var notification = new AppNotificationBuilder()
+        var builder = new AppNotificationBuilder()
             .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Open))
             .AddText(loc.ToastTitle)
             .AddText(loc.ToastBody(glassMl))
             .AddButton(new AppNotificationButton(loc.ToastDrank)
                 .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Drank)))
             .AddButton(new AppNotificationButton(loc.ToastSnooze(ToastArguments.SnoozeMinutes))
-                .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Snooze)))
-            .BuildNotification();
+                .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Snooze)));
+        var notification = WithSound(builder, sound).BuildNotification();
         // Gleicher Tag: eine neue Erinnerung ersetzt die alte im Info-Center.
         notification.Tag = Tag;
         notification.Group = Tag;
         AppNotificationManager.Default.Show(notification);
     }
+
+    /// <summary>"Tagesziel erreicht" – ohne Buttons, ein Klick öffnet die App.</summary>
+    public void ShowGoalReached(int goalMl, string sound)
+    {
+        var builder = new AppNotificationBuilder()
+            .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Open))
+            .AddText(loc.ToastGoalTitle)
+            .AddText(loc.ToastGoalBody(goalMl));
+        AppNotificationManager.Default.Show(WithSound(builder, sound).BuildNotification());
+    }
+
+    /// <summary>Datei eines mitgelieferten Tons; auch für das Probehören in den Einstellungen.</summary>
+    public static Uri SoundUri(string id) => new($"ms-appx:///Assets/Sounds/{id}.wav");
+
+    private static AppNotificationBuilder WithSound(AppNotificationBuilder builder, string sound) => sound switch
+    {
+        SoundCatalog.Silent => builder.MuteAudio(),
+        // Ohne Angabe spielt Windows seinen Standardton.
+        SoundCatalog.Windows => builder,
+        _ when SoundCatalog.IsSipSound(sound) => builder.SetAudioUri(SoundUri(sound)),
+        _ => builder,
+    };
 
     /// <summary>Blendet eine offene Erinnerung aus, z. B. nachdem in der App ein Glas eingetragen wurde.</summary>
     public void RemoveReminder() => _ = RemoveReminderAsync();
