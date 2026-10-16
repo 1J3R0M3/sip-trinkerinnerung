@@ -1,4 +1,5 @@
 using Trinkwasser.Core.Localization;
+using Trinkwasser.Core.Sounds;
 
 namespace Trinkwasser.Core.Settings;
 
@@ -33,6 +34,25 @@ public sealed record AppSettings
     /// <summary>Hell, dunkel oder wie Windows (Standard).</summary>
     public AppTheme Theme { get; init; } = AppTheme.System;
 
+    /// <summary>Töne je Anlass, Ids aus <see cref="SoundCatalog"/>.</summary>
+    public string ReminderSound { get; init; } = SoundCatalog.Default(SoundOccasion.Reminder);
+    public string SnoozeSound { get; init; } = SoundCatalog.Default(SoundOccasion.Snooze);
+    public string GoalSound { get; init; } = SoundCatalog.Default(SoundOccasion.GoalReached);
+
+    public string Sound(SoundOccasion occasion) => occasion switch
+    {
+        SoundOccasion.Snooze => SnoozeSound,
+        SoundOccasion.GoalReached => GoalSound,
+        _ => ReminderSound,
+    };
+
+    public AppSettings WithSound(SoundOccasion occasion, string id) => occasion switch
+    {
+        SoundOccasion.Snooze => this with { SnoozeSound = id },
+        SoundOccasion.GoalReached => this with { GoalSound = id },
+        _ => this with { ReminderSound = id },
+    };
+
     /// <summary>Index 0 = Montag … 6 = Sonntag.</summary>
     public IReadOnlyList<WorkDay> WorkHours { get; init; } = DefaultWorkHours;
 
@@ -51,10 +71,12 @@ public sealed record AppSettings
         && Version == other.Version && SetupDone == other.SetupDone && Language == other.Language
         && DailyGoalMl == other.DailyGoalMl && WeeklyGoalMl == other.WeeklyGoalMl
         && GlassMl == other.GlassMl && IntervalMin == other.IntervalMin && Autostart == other.Autostart
-        && Theme == other.Theme && WorkHours.SequenceEqual(other.WorkHours);
+        && Theme == other.Theme && WorkHours.SequenceEqual(other.WorkHours)
+        && ReminderSound == other.ReminderSound && SnoozeSound == other.SnoozeSound && GoalSound == other.GoalSound;
 
     public override int GetHashCode() =>
-        HashCode.Combine(SetupDone, Language, DailyGoalMl, WeeklyGoalMl, GlassMl, IntervalMin, Autostart, Theme);
+        HashCode.Combine(HashCode.Combine(SetupDone, Language, DailyGoalMl, WeeklyGoalMl, GlassMl, IntervalMin, Autostart, Theme),
+            ReminderSound, SnoozeSound, GoalSound);
 }
 
 /// <summary>Farbschema der App. Gespeichert als "system", "light" oder "dark".</summary>

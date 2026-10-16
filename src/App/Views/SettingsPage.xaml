@@ -123,6 +123,48 @@
                     </ComboBox>
                 </Border>
 
+                <!-- Töne -->
+                <TextBlock
+                    Text="{x:Bind ViewModel.Loc.SettingsSounds, Mode=OneWay}"
+                    Style="{StaticResource SectionHeadingStyle}"
+                    AutomationProperties.HeadingLevel="Level2" />
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel Spacing="12">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds}" IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="12" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SoundRow">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <ComboBox
+                                            MinWidth="240"
+                                            Header="{x:Bind Name, Mode=OneWay}"
+                                            ItemsSource="{x:Bind Options}"
+                                            SelectedIndex="{x:Bind SelectedIndex, Mode=TwoWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:SoundOption">
+                                                    <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <Button
+                                            VerticalAlignment="Bottom"
+                                            Command="{x:Bind PlayCommand}"
+                                            ToolTipService.ToolTip="{x:Bind PlayLabel, Mode=OneWay}"
+                                            AutomationProperties.Name="{x:Bind PlayName, Mode=OneWay}">
+                                            <FontIcon Glyph="&#xE768;" FontSize="14" />
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{x:Bind ViewModel.Loc.SettingsSoundsText, Mode=OneWay}" Style="{StaticResource HintTextStyle}" />
+                    </StackPanel>
+                </Border>
+
                 <!-- Arbeitszeiten -->
                 <TextBlock
                     Text="{x:Bind ViewModel.Loc.SettingsWorkHours, Mode=OneWay}"

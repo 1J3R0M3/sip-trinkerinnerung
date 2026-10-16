@@ -8,6 +8,7 @@ using Trinkwasser.Core.Localization;
 using Trinkwasser.Core.Notifications;
 using Trinkwasser.Core.Reminders;
 using Trinkwasser.Core.Settings;
+using Trinkwasser.Core.Sounds;
 using Trinkwasser.Core.Storage;
 using Windows.Storage;
 using Windows.System.UserProfile;
@@ -43,7 +44,8 @@ public partial class App : Application
         Notifications = new NotificationService(Loc);
         Reminders = new ReminderEngine(Clock, () => Settings.Current, () => Drinks.Last?.Time);
         Settings.Changed += (_, _) => Reminders.Reschedule();
-        DrinkActions = new DrinkActions(Drinks, Reminders, Notifications, Settings);
+        DrinkActions = new DrinkActions(Drinks, Reminders, Notifications, Settings, new DailyGoalNotice(Clock));
+        Sounds = new SoundPreview();
     }
 
     public static new App Current => (App)Application.Current;
@@ -56,6 +58,7 @@ public partial class App : Application
     public NotificationService Notifications { get; }
     public ReminderEngine Reminders { get; }
     public DrinkActions DrinkActions { get; }
+    public SoundPreview Sounds { get; }
 
     /// <summary>Das Hauptfenster wurde aktiviert (z. B. nach Rückkehr aus den Windows-Einstellungen).</summary>
     public event EventHandler? WindowActivated;
@@ -68,7 +71,7 @@ public partial class App : Application
         Notifications.Register();
 
         // Der Takt läuft im Hintergrund; gezeigt wird die Erinnerung auf dem UI-Thread.
-        Reminders.Due += (_, _) => _dispatcher.TryEnqueue(ShowReminder);
+        Reminders.Due += (_, kind) => _dispatcher.TryEnqueue(() => ShowReminder(kind));
         Reminders.Start();
 
         _tray = new TrayService(Loc, ShowWindow, ShowSettings, AddGlassFromTray, SendTestNotification, Quit);
@@ -114,10 +117,12 @@ public partial class App : Application
         }
     }
 
-    private void ShowReminder()
+    private void ShowReminder(ReminderKind kind)
     {
         // Während der Einrichtung noch nicht erinnern.
-        if (Settings.Current.SetupDone) Notifications.ShowReminder(Settings.Current.GlassMl);
+        var s = Settings.Current;
+        if (s.SetupDone)
+            Notifications.ShowReminder(s.GlassMl, s.Sound(kind == ReminderKind.Snooze ? SoundOccasion.Snooze : SoundOccasion.Reminder));
     }
 
     private void AddGlassFromTray()
@@ -140,7 +145,8 @@ public partial class App : Application
         }
     }
 
-    internal void SendTestNotification() => Notifications.ShowReminder(Settings.Current.GlassMl);
+    internal void SendTestNotification() =>
+        Notifications.ShowReminder(Settings.Current.GlassMl, Settings.Current.Sound(SoundOccasion.Reminder));
 
     private void ShowWindow()
     {
