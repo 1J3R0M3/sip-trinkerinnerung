@@ -17,9 +17,9 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ✅ gebaut, Workflow noch nie auf GitHub gelaufen |
 | 5 | Design: Smiley, Countdown-Kreis, Wasser-Fakten, Hell/Dunkel/System | ✅ gebaut, wartet auf Feedback |
 | 6 | Benachrichtigungstöne, Einstellungen in Bereichen, Info mit Version und Lizenzen (Version 1.2.0) | ✅ gebaut und getestet, in main |
-| 7 | Erfolge mit Badges, Erfolgsseite, Benachrichtigung und Ton | ✅ gebaut und getestet, Branch `feature/erfolge`, wartet auf Feedback |
+| 7 | Erfolge mit Badges, Erfolgsseite, Benachrichtigung und Ton | ✅ gebaut und getestet (Version 1.3.0), Branch `feature/erfolge` |
 
-Store: 1.0.0 veröffentlicht, 1.0.1 (Erinnerungs-Fix) eingereicht, 1.2.0 (Töne, neue Einstellungen) gebaut.
+Store: 1.0.0 veröffentlicht, 1.0.1 (Erinnerungs-Fix) eingereicht, 1.2.0 (Töne, neue Einstellungen) gebaut, 1.3.0 (Erfolge) gebaut auf `feature/erfolge`.
 
 Versionen (vom Nutzer festgelegt): dreistellig **MAJOR.MINOR.PATCH** – PATCH (rechts) für Bugfixes,
 MINOR (Mitte) für Features, MAJOR (links) für große Änderungen. Im Manifest vierstellig mit `.0`
