@@ -11,10 +11,14 @@ namespace Trinkwasser.Core.Achievements;
 /// <param name="Since">Ab hier zählen Gläser für Erfolge (erster Start mit Erfolgen); ältere Einträge nicht.</param>
 /// <param name="OnCueCount">Wie oft direkt in einer Erinnerung auf "Getrunken" geklickt wurde.</param>
 /// <param name="Unlocked">Freigeschaltete Erfolge mit Zeitpunkt. Einmal freigeschaltet, bleibt es dabei.</param>
-public sealed record AchievementState(DateTimeOffset Since, int OnCueCount, ImmutableDictionary<string, DateTimeOffset> Unlocked)
+/// <param name="GoalNoticeOn">Tag, an dem zuletzt "Tagesziel erreicht" gemeldet wurde (siehe <see cref="Drinks.DailyGoalNotice"/>).
+/// Steht hier, damit die Meldung auch nach einem Neustart nur einmal am Tag kommt.</param>
+public sealed record AchievementState(DateTimeOffset Since, int OnCueCount, ImmutableDictionary<string, DateTimeOffset> Unlocked,
+    DateOnly? GoalNoticeOn = null)
 {
     public const string FileName = "achievements.json";
     private const int CurrentVersion = 1;
+    private const string DateFormat = "yyyy-MM-dd";
 
     public static AchievementState StartingAt(DateTimeOffset since) => new(since, 0, ImmutableDictionary<string, DateTimeOffset>.Empty);
 
@@ -25,7 +29,8 @@ public sealed record AchievementState(DateTimeOffset Since, int OnCueCount, Immu
         ["version"] = CurrentVersion,
         ["since"] = Format(Since),
         ["onCue"] = OnCueCount,
-        // Feste Reihenfolge wie im Katalog, damit die Datei lesbar bleibt.
+        ["goalNoticeOn"] = GoalNoticeOn?.ToString(DateFormat, CultureInfo.InvariantCulture),
+        // Nach Zeitpunkt sortiert, damit die Datei lesbar bleibt und sich nicht grundlos ändert.
         ["unlocked"] = new JsonObject(Unlocked.OrderBy(u => u.Value).ThenBy(u => u.Key, StringComparer.Ordinal)
             .Select(u => KeyValuePair.Create(u.Key, (JsonNode?)Format(u.Value)))),
     }.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
@@ -48,7 +53,11 @@ public sealed record AchievementState(DateTimeOffset Since, int OnCueCount, Immu
                 if (AchievementCatalog.Find(id) is not null && Time(node) is { } at) unlocked[id] = at;
             }
         }
-        return new AchievementState(since, onCue, unlocked.ToImmutable());
+        var goalNoticeOn = root["goalNoticeOn"] is JsonValue g && g.TryGetValue<string>(out var day)
+            && DateOnly.TryParseExact(day, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var d)
+                ? d
+                : (DateOnly?)null;
+        return new AchievementState(since, onCue, unlocked.ToImmutable(), goalNoticeOn);
     }
 
     private static string Format(DateTimeOffset time) => time.ToString("yyyy-MM-ddTHH:mm:sszzz", CultureInfo.InvariantCulture);

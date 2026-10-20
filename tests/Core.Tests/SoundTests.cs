@@ -150,6 +150,23 @@ public class DailyGoalNoticeTests
     }
 
     [Fact]
+    public void RememberedDayFromBeforeARestartIsNotAnnouncedAgain()
+    {
+        Drink(1500);
+        Assert.True(Drink());
+        Assert.Equal(new DateOnly(2026, 10, 5), _notice.AnnouncedOn);
+
+        // Neustart: neue Instanz mit dem gespeicherten Tag; Rückgängig und neu eintragen.
+        var restarted = new DailyGoalNotice(_clock, _notice.AnnouncedOn);
+        _entries.RemoveAt(_entries.Count - 1);
+        _entries.Add(new DrinkEntry(_clock.GetUtcNow(), 500));
+        Assert.False(restarted.ShouldAnnounce(_entries, 2000));
+
+        // Ein gespeicherter Tag von gestern hindert nicht.
+        Assert.True(new DailyGoalNotice(_clock, new DateOnly(2026, 10, 4)).ShouldAnnounce(_entries, 2000));
+    }
+
+    [Fact]
     public void NextDayAnnouncesAgain()
     {
         Assert.True(Drink(2000));

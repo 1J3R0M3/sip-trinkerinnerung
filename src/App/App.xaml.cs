@@ -47,7 +47,7 @@ public partial class App : Application
         Notifications = new NotificationService(Loc);
         Reminders = new ReminderEngine(Clock, () => Settings.Current, () => Drinks.Last?.Time);
         Settings.Changed += (_, _) => Reminders.Reschedule();
-        DrinkActions = new DrinkActions(Drinks, Reminders, Notifications, Settings, new DailyGoalNotice(Clock), Achievements, LogError);
+        DrinkActions = new DrinkActions(Drinks, Reminders, Notifications, Settings, new DailyGoalNotice(Clock, Achievements.State.GoalNoticeOn), Achievements, LogError);
         Sounds = new SoundPreview();
     }
 
@@ -112,6 +112,9 @@ public partial class App : Application
             case ToastAction.Drank:
                 TryAddGlass(fromReminder: true);
                 break;
+            case ToastAction.TestDrank:
+                TryAddGlass();
+                break;
             case ToastAction.Snooze:
                 Reminders.Snooze();
                 break;
@@ -153,7 +156,7 @@ public partial class App : Application
     }
 
     internal void SendTestNotification() =>
-        Notifications.ShowReminder(Settings.Current.GlassMl, Settings.Current.Sound(SoundOccasion.Reminder));
+        Notifications.ShowReminder(Settings.Current.GlassMl, Settings.Current.Sound(SoundOccasion.Reminder), test: true);
 
     private void ShowWindow()
     {

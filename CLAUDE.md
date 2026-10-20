@@ -39,8 +39,13 @@ Entscheidungen aus Schritt 7 (Erfolge, Branch `feature/erfolge`):
   (`DrinkActions.AddGlass`), nicht bei geänderten Einstellungen; gewertet mit den aktuellen Zielen.
 - Benachrichtigung „Erfolg freigeschaltet“ mit Badge (`SetAppLogoOverride`), mehrere Erfolge in einer;
   Klick öffnet die Erfolgsseite (`ToastAction.Achievements`). Eigener Ton als 4. `SoundOccasion`
-  (JSON `sounds.achievement`, Standard `crystal`). Kommt gleichzeitig „Tagesziel erreicht“, ist der
-  Erfolg lautlos (zwei Töne gleichzeitig klingen schief).
+  (JSON `sounds.achievement`, Standard `crystal`). Kommt gleichzeitig „Tagesziel erreicht“, folgt der
+  Erfolg 6 s später mit eigenem Ton (`DrinkActions.SecondNoticeDelay`; gleichzeitig klangen zwei Töne
+  schief, und Windows legte die zweite Meldung nur ins Info-Center). Hält jemand die Maus über die
+  erste Meldung, kann die zweite trotzdem direkt im Info-Center landen.
+- „Getrunken“ in der Test-Benachrichtigung (`ToastAction.TestDrank`) zählt das Glas, aber nicht für
+  „Aufs Wort“ – sonst ließe sich der Erfolg per Test-Button erschleichen.
+- Beim Testen: Steht der Mauszeiger über einem Popup, blendet Windows es nicht aus.
 - Badges: `tools/gen-badges.cs` zeichnet SVG (Form = Kategorie, Farbe = Stufe, gesperrt grau mit
   Schloss) und rendert per Svg.Skia (nur Werkzeug, nicht in der App) 256-px-PNGs nach
   `src/App/Assets/Achievements/<id>.png` und `<id>.locked.png`. Eigene Arbeit, daher nicht in Credits.
@@ -60,7 +65,7 @@ Entscheidungen aus Schritt 6 (Töne):
   in den Einstellungen per `MediaPlayer` (`SoundPreview`), „Windows-Standard“ liest den Ton aus
   `HKCU\AppEvents\Schemes\Apps\.Default\Notification.Default\.Current`.
 - „Tagesziel erreicht“ (`DailyGoalNotice`): nur wenn genau dieses Glas das Ziel überschreitet, höchstens
-  einmal am Tag (nur im Speicher gemerkt).
+  einmal am Tag. Der Tag steht seit 1.3 in `achievements.json` (`goalNoticeOn`), gilt also auch nach einem Neustart.
 - Töne: CC0-Hörproben von Freesound (`-hq.mp3`) in `artifacts/sounds-raw`, aufbereitet mit
   `tools/process-sounds.cs` (NAudio; Mono, Stille weg, max. 3 s, Lautheit angeglichen, 16-Bit-WAV).
   Herkunft in `src/App/Assets/Sounds/LICENSES.md`.

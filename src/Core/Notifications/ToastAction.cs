@@ -7,6 +7,8 @@ public enum ToastAction
     Open,
     Drank,
     Snooze,
+    /// <summary>"Getrunken" in der Test-Benachrichtigung: zählt das Glas, aber nicht für "Aufs Wort".</summary>
+    TestDrank,
     /// <summary>Klick auf "Erfolg freigeschaltet": Erfolge zeigen.</summary>
     Achievements,
 }
@@ -21,6 +23,7 @@ public static class ToastArguments
     {
         ToastAction.Drank => "drank",
         ToastAction.Snooze => "snooze",
+        ToastAction.TestDrank => "test-drank",
         ToastAction.Achievements => "achievements",
         _ => "open",
     };
@@ -32,6 +35,7 @@ public static class ToastArguments
             {
                 "drank" => ToastAction.Drank,
                 "snooze" => ToastAction.Snooze,
+                "test-drank" => ToastAction.TestDrank,
                 "achievements" => ToastAction.Achievements,
                 _ => ToastAction.Open,
             }

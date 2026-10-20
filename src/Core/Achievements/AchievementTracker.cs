@@ -77,6 +77,12 @@ public sealed class AchievementTracker(JsonFileStore store, TimeProvider clock)
     /// <summary>"Getrunken" wurde direkt in einer Erinnerung angeklickt (zählt für "Aufs Wort").</summary>
     public void RecordOnCue() => Save(State with { OnCueCount = State.OnCueCount + 1 });
 
+    /// <summary>"Tagesziel erreicht" wurde heute gemeldet; gespeichert, damit es nach einem Neustart nicht noch einmal kommt.</summary>
+    public void RecordGoalNotice(DateOnly day)
+    {
+        if (State.GoalNoticeOn != day) Save(State with { GoalNoticeOn = day });
+    }
+
     private void Save(AchievementState next)
     {
         store.Write(AchievementState.FileName, next.ToJson());

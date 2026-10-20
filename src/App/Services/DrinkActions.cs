@@ -16,6 +16,13 @@ namespace Trinkwasser.App.Services;
 public sealed class DrinkActions(DrinkLog log, ReminderEngine reminders, NotificationService notifications,
     SettingsService settings, DailyGoalNotice goalNotice, AchievementTracker achievements, Action<Exception> logError)
 {
+    /// <summary>
+    /// Abstand, wenn "Tagesziel erreicht" und ein Erfolg zugleich fällig sind: Gleichzeitig klingen
+    /// zwei Töne schief, und Windows zeigt die zweite Meldung dann oft nur im Info-Center. So
+    /// lange bleibt eine Benachrichtigung bei den Standardeinstellungen von Windows sichtbar.
+    /// </summary>
+    public static TimeSpan SecondNoticeDelay { get; } = TimeSpan.FromSeconds(6);
+
     /// <param name="fromReminder">"Getrunken" direkt in einer Erinnerung (zählt für "Aufs Wort").</param>
     public DrinkEntry AddGlass(bool fromReminder = false)
     {
@@ -30,10 +37,15 @@ public sealed class DrinkActions(DrinkLog log, ReminderEngine reminders, Notific
 
         try
         {
+            if (goalShown && goalNotice.AnnouncedOn is { } day) achievements.RecordGoalNotice(day);
             if (fromReminder) achievements.RecordOnCue();
             var unlocked = achievements.Check(log.Entries, s);
-            // Zwei Töne gleichzeitig klingen schief: neben "Tagesziel erreicht" kommt der Erfolg leise.
-            notifications.ShowAchievements(unlocked, goalShown ? SoundCatalog.Silent : s.Sound(SoundOccasion.Achievement));
+            if (unlocked.Count > 0)
+            {
+                var sound = s.Sound(SoundOccasion.Achievement);
+                if (goalShown) _ = ShowAchievementsLaterAsync(unlocked, sound);
+                else notifications.ShowAchievements(unlocked, sound);
+            }
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
@@ -47,5 +59,20 @@ public sealed class DrinkActions(DrinkLog log, ReminderEngine reminders, Notific
         var removed = log.RemoveLast();
         reminders.Reschedule();
         return removed;
+    }
+
+    /// <summary>Erfolg nach "Tagesziel erreicht" melden, nicht gleichzeitig (siehe <see cref="SecondNoticeDelay"/>).</summary>
+    private async Task ShowAchievementsLaterAsync(IReadOnlyList<Achievement> unlocked, string sound)
+    {
+        try
+        {
+            await Task.Delay(SecondNoticeDelay);
+            notifications.ShowAchievements(unlocked, sound);
+        }
+        catch (Exception e)
+        {
+            // Läuft unbeobachtet weiter; ein Fehler darf die App nicht beenden. Der Erfolg ist ohnehin gespeichert.
+            logError(e);
+        }
     }
 }

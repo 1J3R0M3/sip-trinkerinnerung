@@ -33,14 +33,15 @@ public sealed class NotificationService(Localizer loc)
     public void Unregister() => AppNotificationManager.Default.Unregister();
 
     /// <param name="sound">Id aus <see cref="SoundCatalog"/>.</param>
-    public void ShowReminder(int glassMl, string sound)
+    /// <param name="test">Test-Benachrichtigung: "Getrunken" zählt dann nicht für den Erfolg "Aufs Wort".</param>
+    public void ShowReminder(int glassMl, string sound, bool test = false)
     {
         var builder = new AppNotificationBuilder()
             .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Open))
             .AddText(loc.ToastTitle)
             .AddText(loc.ToastBody(glassMl))
             .AddButton(new AppNotificationButton(loc.ToastDrank)
-                .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Drank)))
+                .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(test ? ToastAction.TestDrank : ToastAction.Drank)))
             .AddButton(new AppNotificationButton(loc.ToastSnooze(ToastArguments.SnoozeMinutes))
                 .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Snooze)));
         var notification = WithSound(builder, sound).BuildNotification();

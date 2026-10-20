@@ -246,6 +246,22 @@ public sealed class AchievementTrackerTests : IDisposable
     }
 
     [Fact]
+    public void GoalNoticeDaySurvivesReload()
+    {
+        var tracker = Create();
+        var changed = 0;
+        tracker.Changed += (_, _) => changed++;
+        tracker.RecordGoalNotice(new DateOnly(2026, 10, 5));
+        tracker.RecordGoalNotice(new DateOnly(2026, 10, 5));   // gleicher Tag: nicht noch einmal speichern
+        Assert.Equal(1, changed);
+        Assert.Equal(new DateOnly(2026, 10, 5), Create().State.GoalNoticeOn);
+    }
+
+    [Fact]
+    public void FileWithoutGoalNoticeDayIsValid() =>
+        Assert.Null(AchievementState.Parse("""{ "version": 1, "since": "2026-10-05T09:15:00+02:00" }""").GoalNoticeOn);
+
+    [Fact]
     public void BrokenFileIsBackedUpAndCountingStartsOver()
     {
         Directory.CreateDirectory(_folder);
@@ -288,10 +304,11 @@ public sealed class AchievementTrackerTests : IDisposable
         var state = AchievementState.StartingAt(At(2026, 10, 5, "09:15")) with
         {
             OnCueCount = 4,
+            GoalNoticeOn = new DateOnly(2026, 10, 7),
             Unlocked = ImmutableDictionary<string, DateTimeOffset>.Empty.Add(AchievementCatalog.StreakId(3), At(2026, 10, 7, "18:00")),
         };
         var loaded = AchievementState.Parse(state.ToJson());
-        Assert.Equal((state.Since, state.OnCueCount), (loaded.Since, loaded.OnCueCount));
+        Assert.Equal((state.Since, state.OnCueCount, state.GoalNoticeOn), (loaded.Since, loaded.OnCueCount, loaded.GoalNoticeOn));
         Assert.Equal(state.Unlocked, loaded.Unlocked);
     }
 }
