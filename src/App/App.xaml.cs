@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using Microsoft.Windows.AppNotifications;
 using Trinkwasser.App.Services;
+using Trinkwasser.Core.Achievements;
 using Trinkwasser.Core.Drinks;
 using Trinkwasser.Core.Localization;
 using Trinkwasser.Core.Notifications;
@@ -35,6 +36,8 @@ public partial class App : Application
         Settings.Load();
         Drinks = new DrinkLog(store, Clock);
         Drinks.Load();
+        Achievements = new AchievementTracker(store, Clock);
+        Achievements.Load();
 
         Loc = new Localizer(Settings.Current.Language, AppResources.AppName);
         // Sprachwechsel ohne Neustart: Fenster, Tray und neue Benachrichtigungen folgen dem Localizer.
@@ -44,7 +47,7 @@ public partial class App : Application
         Notifications = new NotificationService(Loc);
         Reminders = new ReminderEngine(Clock, () => Settings.Current, () => Drinks.Last?.Time);
         Settings.Changed += (_, _) => Reminders.Reschedule();
-        DrinkActions = new DrinkActions(Drinks, Reminders, Notifications, Settings, new DailyGoalNotice(Clock));
+        DrinkActions = new DrinkActions(Drinks, Reminders, Notifications, Settings, new DailyGoalNotice(Clock, Achievements.State.GoalNoticeOn), Achievements, LogError);
         Sounds = new SoundPreview();
     }
 
@@ -53,6 +56,7 @@ public partial class App : Application
     public TimeProvider Clock { get; } = TimeProvider.System;
     public SettingsService Settings { get; }
     public DrinkLog Drinks { get; }
+    public AchievementTracker Achievements { get; }
     public Localizer Loc { get; }
     public AutostartService Autostart { get; }
     public NotificationService Notifications { get; }
@@ -106,10 +110,16 @@ public partial class App : Application
         switch (action)
         {
             case ToastAction.Drank:
+                TryAddGlass(fromReminder: true);
+                break;
+            case ToastAction.TestDrank:
                 TryAddGlass();
                 break;
             case ToastAction.Snooze:
                 Reminders.Snooze();
+                break;
+            case ToastAction.Achievements:
+                ShowAchievements();
                 break;
             default:
                 ShowWindow();
@@ -131,11 +141,11 @@ public partial class App : Application
     }
 
     /// <summary>"Getrunken" außerhalb der Startseite. Speicherfehler landen im error.log.</summary>
-    private bool TryAddGlass()
+    private bool TryAddGlass(bool fromReminder = false)
     {
         try
         {
-            DrinkActions.AddGlass();
+            DrinkActions.AddGlass(fromReminder);
             return true;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
@@ -146,7 +156,7 @@ public partial class App : Application
     }
 
     internal void SendTestNotification() =>
-        Notifications.ShowReminder(Settings.Current.GlassMl, Settings.Current.Sound(SoundOccasion.Reminder));
+        Notifications.ShowReminder(Settings.Current.GlassMl, Settings.Current.Sound(SoundOccasion.Reminder), test: true);
 
     private void ShowWindow()
     {
@@ -168,11 +178,17 @@ public partial class App : Application
         _window!.ShowSettings();
     }
 
+    private void ShowAchievements()
+    {
+        ShowWindow();
+        _window!.ShowAchievements();
+    }
+
     /// <summary>
     /// Schreibt Fehler nach <c>error.log</c> im LocalFolder – nur lokal, nichts wird
     /// versendet. Hilft bei Fehlerberichten von Nutzern.
     /// </summary>
-    private static void LogError(Exception exception)
+    internal static void LogError(Exception exception)
     {
         try
         {

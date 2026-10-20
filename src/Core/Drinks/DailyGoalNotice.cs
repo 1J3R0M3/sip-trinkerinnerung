@@ -5,13 +5,23 @@ namespace Trinkwasser.Core.Drinks;
 /// <summary>
 /// Entscheidet, ob nach einem eingetragenen Glas "Tagesziel erreicht" gemeldet wird: nur wenn
 /// genau dieses Glas das Ziel überschreitet und höchstens einmal am Tag. Wer ein Glas
-/// rückgängig macht und wieder einträgt, bekommt die Meldung nicht noch einmal
-/// (gemerkt wird das nur im Speicher; nach einem Neustart der App wäre sie wieder möglich).
+/// rückgängig macht und wieder einträgt, bekommt die Meldung nicht noch einmal. Damit das auch
+/// nach einem Neustart gilt, speichert der Aufrufer <see cref="AnnouncedOn"/> (in <c>achievements.json</c>)
+/// und gibt den Tag beim nächsten Start wieder mit.
 /// </summary>
-public sealed class DailyGoalNotice(TimeProvider clock)
+public sealed class DailyGoalNotice(TimeProvider clock, DateOnly? announcedOn = null)
 {
     private readonly Lock _lock = new();
-    private DateOnly? _announcedOn;
+    private DateOnly? _announcedOn = announcedOn;
+
+    /// <summary>Tag der letzten Meldung.</summary>
+    public DateOnly? AnnouncedOn
+    {
+        get
+        {
+            lock (_lock) return _announcedOn;
+        }
+    }
 
     /// <param name="entries">Protokoll nach dem Eintragen, das neue Glas ist der letzte Eintrag.</param>
     public bool ShouldAnnounce(IReadOnlyList<DrinkEntry> entries, int dailyGoalMl)

@@ -6,6 +6,7 @@ public enum SoundOccasion
     Reminder,
     Snooze,
     GoalReached,
+    Achievement,
 }
 
 /// <summary>
@@ -41,6 +42,7 @@ public static class SoundCatalog
     {
         SoundOccasion.Snooze => "quick-pour",
         SoundOccasion.GoalReached => "glass-ping",
+        SoundOccasion.Achievement => "crystal",
         _ => "drop",
     };
 }

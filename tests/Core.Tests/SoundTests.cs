@@ -37,6 +37,16 @@ public class SoundSettingsTests
     }
 
     [Fact]
+    public void SettingsFromBeforeAchievementsGetTheAchievementDefault()
+    {
+        // Einstellungsdatei aus 1.2: Töne ohne "achievement".
+        var loaded = SettingsSanitizer.FromJson("""{ "sounds": { "reminder": "plop", "snooze": "pour", "goal": "silent" } }""", Defaults);
+        Assert.Equal("plop", loaded.ReminderSound);
+        Assert.Equal(SoundCatalog.Default(SoundOccasion.Achievement), loaded.AchievementSound);
+        Assert.Equal("windows", SettingsSanitizer.FromJson(SettingsSanitizer.ToJson(Defaults with { AchievementSound = "windows" }), Defaults).AchievementSound);
+    }
+
+    [Fact]
     public void UnknownSoundFallsBackPerOccasion()
     {
         var loaded = SettingsSanitizer.FromJson("""{ "sounds": { "reminder": "trompete", "snooze": 5, "goal": "silent" } }""", Defaults);
@@ -137,6 +147,23 @@ public class DailyGoalNoticeTests
         Assert.True(Drink());
         _entries.RemoveAt(_entries.Count - 1);
         Assert.False(Drink());
+    }
+
+    [Fact]
+    public void RememberedDayFromBeforeARestartIsNotAnnouncedAgain()
+    {
+        Drink(1500);
+        Assert.True(Drink());
+        Assert.Equal(new DateOnly(2026, 10, 5), _notice.AnnouncedOn);
+
+        // Neustart: neue Instanz mit dem gespeicherten Tag; Rückgängig und neu eintragen.
+        var restarted = new DailyGoalNotice(_clock, _notice.AnnouncedOn);
+        _entries.RemoveAt(_entries.Count - 1);
+        _entries.Add(new DrinkEntry(_clock.GetUtcNow(), 500));
+        Assert.False(restarted.ShouldAnnounce(_entries, 2000));
+
+        // Ein gespeicherter Tag von gestern hindert nicht.
+        Assert.True(new DailyGoalNotice(_clock, new DateOnly(2026, 10, 4)).ShouldAnnounce(_entries, 2000));
     }
 
     [Fact]

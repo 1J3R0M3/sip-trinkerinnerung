@@ -8,6 +8,8 @@ public class ToastArgumentsTests
     [InlineData(ToastAction.Open)]
     [InlineData(ToastAction.Drank)]
     [InlineData(ToastAction.Snooze)]
+    [InlineData(ToastAction.TestDrank)]
+    [InlineData(ToastAction.Achievements)]
     public void RoundTrips(ToastAction action) =>
         Assert.Equal(action, ToastArguments.Parse(new Dictionary<string, string>
         {

@@ -33,6 +33,7 @@ public static class SettingsSanitizer
         ReminderSound = SoundCatalog.IsKnown(input.ReminderSound) ? input.ReminderSound : previous.ReminderSound,
         SnoozeSound = SoundCatalog.IsKnown(input.SnoozeSound) ? input.SnoozeSound : previous.SnoozeSound,
         GoalSound = SoundCatalog.IsKnown(input.GoalSound) ? input.GoalSound : previous.GoalSound,
+        AchievementSound = SoundCatalog.IsKnown(input.AchievementSound) ? input.AchievementSound : previous.AchievementSound,
         WorkHours = input.WorkHours is { Count: 7 } days
             ? [.. days.Select((d, i) => SanitizeDay(d.Enabled, d.Start, d.End, previous.WorkHours[i]))]
             : previous.WorkHours,
@@ -60,7 +61,7 @@ public static class SettingsSanitizer
             Theme = ParseTheme(Text(o["theme"])) ?? defaults.Theme,
         };
 
-        // Fehlt "sounds" (Einstellungen vor 1.2) oder ist ein Ton unbekannt, gilt der Standard.
+        // Fehlt "sounds" (Einstellungen vor 1.2) bzw. "achievement" (vor 1.3) oder ist ein Ton unbekannt, gilt der Standard.
         if (o["sounds"] is JsonObject sounds)
         {
             result = result with
@@ -68,6 +69,7 @@ public static class SettingsSanitizer
                 ReminderSound = Sound(sounds["reminder"]) ?? defaults.ReminderSound,
                 SnoozeSound = Sound(sounds["snooze"]) ?? defaults.SnoozeSound,
                 GoalSound = Sound(sounds["goal"]) ?? defaults.GoalSound,
+                AchievementSound = Sound(sounds["achievement"]) ?? defaults.AchievementSound,
             };
         }
 
@@ -108,6 +110,7 @@ public static class SettingsSanitizer
                 ["reminder"] = s.ReminderSound,
                 ["snooze"] = s.SnoozeSound,
                 ["goal"] = s.GoalSound,
+                ["achievement"] = s.AchievementSound,
             },
             ["workHours"] = new JsonArray([.. s.WorkHours.Select(d => (JsonNode)new JsonObject
             {

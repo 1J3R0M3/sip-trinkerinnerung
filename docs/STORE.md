@@ -187,9 +187,10 @@ auf „Getrunken“ wird es gezählt, mit „In 10 Min. erinnern“ verschoben.
 - Tages- und Wochenziel mit Fortschrittsanzeige
 - Ein Smiley zeigt auf einen Blick, ob du für die Uhrzeit genug getrunken hast
 - Countdown-Kreis bis zur nächsten Erinnerung
-- Eigene Töne für Erinnerung, erneute Erinnerung und „Tagesziel erreicht“ –
+- Eigene Töne für Erinnerung, erneute Erinnerung, „Tagesziel erreicht“ und Erfolge –
   Wassertropfen, Glas-Klirren, Plätschern und mehr, oder lautlos
 - Statistik: Wochenverlauf, Tagesdurchschnitt, beste Tageszeit, Serie
+- 17 Erfolge mit eigenen Badges – vom ersten Glas bis zum Kubikmeter
 - Wissenswertes rund ums Wasser auf der Startseite
 - Hell, dunkel oder wie Windows
 - Deutsch und Englisch, umschaltbar ohne Neustart
@@ -213,9 +214,10 @@ glass of water at your chosen interval. Click "Done" to log it or "Remind me in
 - Daily and weekly goals with progress
 - A smiley shows at a glance whether you're on track for the time of day
 - Countdown ring until the next reminder
-- Your own sounds for reminders, repeat reminders and "daily goal reached" –
+- Your own sounds for reminders, repeat reminders, "daily goal reached" and achievements –
   water drops, glass clinks, pouring and more, or silent
 - Statistics: weekly history, daily average, best time of day, streak
+- 17 achievements with their own badges – from your first glass to a cubic metre
 - Water facts on the home page
 - Light, dark or system theme
 - German and English, switchable without restarting

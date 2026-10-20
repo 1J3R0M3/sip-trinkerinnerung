@@ -120,6 +120,7 @@ public sealed partial class Localizer : ObservableObject
     {
         Sounds.SoundOccasion.Snooze => Format("sound.occasion.snooze", ("minutes", Notifications.ToastArguments.SnoozeMinutes)),
         Sounds.SoundOccasion.GoalReached => Get("sound.occasion.goal"),
+        Sounds.SoundOccasion.Achievement => Get("sound.occasion.achievement"),
         _ => Get("sound.occasion.reminder"),
     };
 
@@ -206,6 +207,60 @@ public sealed partial class Localizer : ObservableObject
 
     /// <summary>Fakt 0 … <see cref="FactCount"/> − 1.</summary>
     public string Fact(int index) => Get($"fact.{index % FactCount + 1}");
+
+    public string NavAchievements => Get("nav.achievements");
+    public string AchTitle => Get("ach.title");
+    public string AchSummary(int count, int total) => Format("ach.summary", ("count", count), ("total", total));
+    public string AchSince(DateTimeOffset since) => Format("ach.since", ("date", Date(since)));
+    public string AchLocked => Get("ach.locked");
+    public string AchUnlockedOn(DateTimeOffset at) => Format("ach.unlockedOn", ("date", Date(at)));
+    public string AchName(string id) => Get($"ach.{id}.name");
+    public string AchDescription(string id) => Get($"ach.{id}.description");
+
+    public string AchCategory(Achievements.AchievementCategory category) => category switch
+    {
+        Achievements.AchievementCategory.Volume => Get("ach.category.volume"),
+        Achievements.AchievementCategory.Streak => Get("ach.category.streak"),
+        Achievements.AchievementCategory.Habit => Get("ach.category.habit"),
+        _ => Get("ach.category.firstSteps"),
+    };
+
+    /// <summary>"37,2 von 50 l", "Heute 1.500 von 2.000 ml"; leer bei "Erster Schluck" (ein Glas, kein Fortschritt).</summary>
+    public string AchProgress(Achievements.AchievementProgress p)
+    {
+        var key = p.Achievement switch
+        {
+            { Id: Achievements.AchievementCatalog.FirstDailyGoal } => "ach.progress.today",
+            { Id: Achievements.AchievementCatalog.FirstWeeklyGoal } => "ach.progress.thisWeek",
+            { Id: Achievements.AchievementCatalog.PerfectWeek } => "ach.progress.thisWeekDays",
+            { Unit: Achievements.AchievementUnit.Liters } => "ach.progress.liters",
+            { Unit: Achievements.AchievementUnit.Days } => "ach.progress.days",
+            { Unit: Achievements.AchievementUnit.WorkDays } => "ach.progress.workDays",
+            { Unit: Achievements.AchievementUnit.Times } => "ach.progress.times",
+            _ => null,
+        };
+        if (key is null) return string.Empty;
+        if (p.Achievement.Unit != Achievements.AchievementUnit.Liters)
+            return Format(key, ("value", p.Current), ("target", p.Target));
+        // Liter mit einer Nachkommastelle, abgerundet: 9,99 l sind noch keine 10 l.
+        var liters = Math.Floor(p.Current / 100.0) / 10;
+        return Format(key, ("value", liters.ToString("#,##0.#", Culture)), ("target", p.Target / 1000));
+    }
+
+    public string AchAutomationName(Achievements.AchievementProgress p) => p.UnlockedAt is { } at
+        ? Format("ach.a11yUnlocked", ("name", AchName(p.Achievement.Id)), ("date", Date(at)), ("description", AchDescription(p.Achievement.Id)))
+        : Format("ach.a11yLocked", ("name", AchName(p.Achievement.Id)), ("description", AchDescription(p.Achievement.Id)), ("progress", AchProgress(p))).TrimEnd(' ', '.') + ".";
+
+    public string AchBrokenFile(string? backupPath) => string.IsNullOrEmpty(backupPath)
+        ? Get("ach.brokenFileNoBackup")
+        : Format("ach.brokenFile", ("file", Path.GetFileName(backupPath)));
+
+    public string ToastAchievementTitle => Get("toast.achievementTitle");
+    public string ToastAchievementBody(string id) => Format("toast.achievementBody", ("name", AchName(id)), ("description", AchDescription(id)));
+    public string ToastAchievementsTitle(int count) => Format("toast.achievementsTitle", ("count", count));
+
+    /// <summary>Datum kurz in der App-Sprache (de: 20.10.2026, en: 10/20/2026).</summary>
+    public string Date(DateTimeOffset time) => time.ToLocalTime().ToString("d", Culture);
 
     public string FieldTheme => Get("field.theme");
     public string ThemeName(Settings.AppTheme theme) => Get("theme." + Settings.SettingsSanitizer.FormatTheme(theme));

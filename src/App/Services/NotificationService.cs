@@ -1,5 +1,6 @@
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
+using Trinkwasser.Core.Achievements;
 using Trinkwasser.Core.Localization;
 using Trinkwasser.Core.Notifications;
 using Trinkwasser.Core.Sounds;
@@ -32,14 +33,15 @@ public sealed class NotificationService(Localizer loc)
     public void Unregister() => AppNotificationManager.Default.Unregister();
 
     /// <param name="sound">Id aus <see cref="SoundCatalog"/>.</param>
-    public void ShowReminder(int glassMl, string sound)
+    /// <param name="test">Test-Benachrichtigung: "Getrunken" zählt dann nicht für den Erfolg "Aufs Wort".</param>
+    public void ShowReminder(int glassMl, string sound, bool test = false)
     {
         var builder = new AppNotificationBuilder()
             .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Open))
             .AddText(loc.ToastTitle)
             .AddText(loc.ToastBody(glassMl))
             .AddButton(new AppNotificationButton(loc.ToastDrank)
-                .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Drank)))
+                .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(test ? ToastAction.TestDrank : ToastAction.Drank)))
             .AddButton(new AppNotificationButton(loc.ToastSnooze(ToastArguments.SnoozeMinutes))
                 .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Snooze)));
         var notification = WithSound(builder, sound).BuildNotification();
@@ -58,6 +60,27 @@ public sealed class NotificationService(Localizer loc)
             .AddText(loc.ToastGoalBody(goalMl));
         AppNotificationManager.Default.Show(WithSound(builder, sound).BuildNotification());
     }
+
+    /// <summary>
+    /// "Erfolg freigeschaltet" mit dem Badge als Bild; mehrere Erfolge auf einmal in einer
+    /// Benachrichtigung. Ein Klick öffnet die Erfolgsseite.
+    /// </summary>
+    public void ShowAchievements(IReadOnlyList<Achievement> achievements, string sound)
+    {
+        if (achievements.Count == 0) return;
+        var builder = new AppNotificationBuilder()
+            .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Achievements))
+            .SetAppLogoOverride(BadgeUri(achievements[0].Id, unlocked: true), AppNotificationImageCrop.Default);
+        builder = achievements is [var single]
+            ? builder.AddText(loc.ToastAchievementTitle).AddText(loc.ToastAchievementBody(single.Id))
+            : builder.AddText(loc.ToastAchievementsTitle(achievements.Count))
+                .AddText(string.Join(", ", achievements.Select(a => loc.AchName(a.Id))));
+        AppNotificationManager.Default.Show(WithSound(builder, sound).BuildNotification());
+    }
+
+    /// <summary>Bild eines Erfolgs (aus tools/gen-badges.cs), freigeschaltet oder grau mit Schloss.</summary>
+    public static Uri BadgeUri(string id, bool unlocked) =>
+        new($"ms-appx:///Assets/Achievements/{id}{(unlocked ? "" : ".locked")}.png");
 
     /// <summary>Datei eines mitgelieferten Tons; auch für das Probehören in den Einstellungen.</summary>
     public static Uri SoundUri(string id) => new($"ms-appx:///Assets/Sounds/{id}.wav");
