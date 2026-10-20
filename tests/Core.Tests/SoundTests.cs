@@ -37,6 +37,16 @@ public class SoundSettingsTests
     }
 
     [Fact]
+    public void SettingsFromBeforeAchievementsGetTheAchievementDefault()
+    {
+        // Einstellungsdatei aus 1.2: Töne ohne "achievement".
+        var loaded = SettingsSanitizer.FromJson("""{ "sounds": { "reminder": "plop", "snooze": "pour", "goal": "silent" } }""", Defaults);
+        Assert.Equal("plop", loaded.ReminderSound);
+        Assert.Equal(SoundCatalog.Default(SoundOccasion.Achievement), loaded.AchievementSound);
+        Assert.Equal("windows", SettingsSanitizer.FromJson(SettingsSanitizer.ToJson(Defaults with { AchievementSound = "windows" }), Defaults).AchievementSound);
+    }
+
+    [Fact]
     public void UnknownSoundFallsBackPerOccasion()
     {
         var loaded = SettingsSanitizer.FromJson("""{ "sounds": { "reminder": "trompete", "snooze": 5, "goal": "silent" } }""", Defaults);

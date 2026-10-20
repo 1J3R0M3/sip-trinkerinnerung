@@ -57,6 +57,12 @@ public sealed partial class MainWindow : Window
         if (RootFrame.Content is ShellPage shell) shell.ShowSettings();
     }
 
+    /// <summary>Öffnet die Erfolge (Klick auf "Erfolg freigeschaltet"); während der Einrichtung bleibt der Assistent stehen.</summary>
+    public void ShowAchievements()
+    {
+        if (RootFrame.Content is ShellPage shell) shell.ShowAchievements();
+    }
+
     public void CloseForExit()
     {
         _exiting = true;
@@ -111,6 +117,7 @@ public sealed partial class MainWindow : Window
         var messages = new List<string>();
         if (App.Current.Settings.BrokenFileBackup is { } settingsBackup) messages.Add(Loc.SettingsBrokenFile(settingsBackup));
         if (App.Current.Drinks.BrokenFileBackup is { } drinksBackup) messages.Add(Loc.DrinksBrokenFile(drinksBackup));
+        if (App.Current.Achievements.BrokenFileBackup is { } achievementsBackup) messages.Add(Loc.AchBrokenFile(achievementsBackup));
         BrokenFileBar.Message = string.Join(Environment.NewLine, messages);
     }
 }

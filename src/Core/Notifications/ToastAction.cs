@@ -7,6 +7,8 @@ public enum ToastAction
     Open,
     Drank,
     Snooze,
+    /// <summary>Klick auf "Erfolg freigeschaltet": Erfolge zeigen.</summary>
+    Achievements,
 }
 
 /// <summary>Übersetzt zwischen <see cref="ToastAction"/> und den Argumenten der Benachrichtigung.</summary>
@@ -19,6 +21,7 @@ public static class ToastArguments
     {
         ToastAction.Drank => "drank",
         ToastAction.Snooze => "snooze",
+        ToastAction.Achievements => "achievements",
         _ => "open",
     };
 
@@ -29,6 +32,7 @@ public static class ToastArguments
             {
                 "drank" => ToastAction.Drank,
                 "snooze" => ToastAction.Snooze,
+                "achievements" => ToastAction.Achievements,
                 _ => ToastAction.Open,
             }
             : ToastAction.Open;

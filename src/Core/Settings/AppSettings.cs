@@ -38,11 +38,13 @@ public sealed record AppSettings
     public string ReminderSound { get; init; } = SoundCatalog.Default(SoundOccasion.Reminder);
     public string SnoozeSound { get; init; } = SoundCatalog.Default(SoundOccasion.Snooze);
     public string GoalSound { get; init; } = SoundCatalog.Default(SoundOccasion.GoalReached);
+    public string AchievementSound { get; init; } = SoundCatalog.Default(SoundOccasion.Achievement);
 
     public string Sound(SoundOccasion occasion) => occasion switch
     {
         SoundOccasion.Snooze => SnoozeSound,
         SoundOccasion.GoalReached => GoalSound,
+        SoundOccasion.Achievement => AchievementSound,
         _ => ReminderSound,
     };
 
@@ -50,6 +52,7 @@ public sealed record AppSettings
     {
         SoundOccasion.Snooze => this with { SnoozeSound = id },
         SoundOccasion.GoalReached => this with { GoalSound = id },
+        SoundOccasion.Achievement => this with { AchievementSound = id },
         _ => this with { ReminderSound = id },
     };
 
@@ -72,11 +75,12 @@ public sealed record AppSettings
         && DailyGoalMl == other.DailyGoalMl && WeeklyGoalMl == other.WeeklyGoalMl
         && GlassMl == other.GlassMl && IntervalMin == other.IntervalMin && Autostart == other.Autostart
         && Theme == other.Theme && WorkHours.SequenceEqual(other.WorkHours)
-        && ReminderSound == other.ReminderSound && SnoozeSound == other.SnoozeSound && GoalSound == other.GoalSound;
+        && ReminderSound == other.ReminderSound && SnoozeSound == other.SnoozeSound && GoalSound == other.GoalSound
+        && AchievementSound == other.AchievementSound;
 
     public override int GetHashCode() =>
         HashCode.Combine(HashCode.Combine(SetupDone, Language, DailyGoalMl, WeeklyGoalMl, GlassMl, IntervalMin, Autostart, Theme),
-            ReminderSound, SnoozeSound, GoalSound);
+            ReminderSound, SnoozeSound, GoalSound, AchievementSound);
 }
 
 /// <summary>Farbschema der App. Gespeichert als "system", "light" oder "dark".</summary>

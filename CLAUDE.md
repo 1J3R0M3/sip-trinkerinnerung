@@ -17,12 +17,38 @@ Nachfolger des Electron-Prototyps https://github.com/1J3R0M3/trinkwasser-app (lo
 | 4 | Store-Paket und README (optional GitHub-Actions-Workflow) | ✅ gebaut, Workflow noch nie auf GitHub gelaufen |
 | 5 | Design: Smiley, Countdown-Kreis, Wasser-Fakten, Hell/Dunkel/System | ✅ gebaut, wartet auf Feedback |
 | 6 | Benachrichtigungstöne, Einstellungen in Bereichen, Info mit Version und Lizenzen (Version 1.2.0) | ✅ gebaut und getestet, in main |
+| 7 | Erfolge mit Badges, Erfolgsseite, Benachrichtigung und Ton | ✅ gebaut und getestet, Branch `feature/erfolge`, wartet auf Feedback |
 
 Store: 1.0.0 veröffentlicht, 1.0.1 (Erinnerungs-Fix) eingereicht, 1.2.0 (Töne, neue Einstellungen) gebaut.
 
 Versionen (vom Nutzer festgelegt): dreistellig **MAJOR.MINOR.PATCH** – PATCH (rechts) für Bugfixes,
 MINOR (Mitte) für Features, MAJOR (links) für große Änderungen. Im Manifest vierstellig mit `.0`
 (Store-Pflicht), angezeigt dreistellig. Bauen mit `.\tools\Build-StorePackage.ps1 -Version x.y.z`.
+
+Entscheidungen aus Schritt 7 (Erfolge, Branch `feature/erfolge`):
+- 17 Erfolge in `Core/Achievements/AchievementCatalog` (Ids wie die Badge-Dateien): Erste Schritte
+  (erstes Glas, erstes Tagesziel, erstes Wochenziel), Menge (10/50/100/250/500/1000 l), Durchhalten
+  (Streak 3/7/14/30/100, gezählt wie in der Statistik), Gewohnheit (Perfekte Woche = an allen
+  Arbeitstagen einer Woche Mo–So das Tagesziel; Aufs Wort = 10× „Getrunken“ direkt in der Erinnerung;
+  Früher Vogel = an 5 Arbeitstagen erstes Glas spätestens 1 h nach Arbeitsbeginn). Kein Erfolg belohnt
+  deutlich mehr als das Tagesziel.
+- Gezählt wird „ab jetzt“ (vom Nutzer so gewählt): `achievements.json` hält `since` (erster Start mit
+  Erfolgen), `onCue` und `unlocked` (Id → Zeitpunkt). Gläser vor `since` zählen nirgends mit. Kaputte
+  Datei → gesichert, Hinweis im Fenster, Zählung beginnt neu.
+- Freigeschaltet bleibt freigeschaltet (auch nach „Rückgängig“). Geprüft wird nur nach einem Glas
+  (`DrinkActions.AddGlass`), nicht bei geänderten Einstellungen; gewertet mit den aktuellen Zielen.
+- Benachrichtigung „Erfolg freigeschaltet“ mit Badge (`SetAppLogoOverride`), mehrere Erfolge in einer;
+  Klick öffnet die Erfolgsseite (`ToastAction.Achievements`). Eigener Ton als 4. `SoundOccasion`
+  (JSON `sounds.achievement`, Standard `crystal`). Kommt gleichzeitig „Tagesziel erreicht“, ist der
+  Erfolg lautlos (zwei Töne gleichzeitig klingen schief).
+- Badges: `tools/gen-badges.cs` zeichnet SVG (Form = Kategorie, Farbe = Stufe, gesperrt grau mit
+  Schloss) und rendert per Svg.Skia (nur Werkzeug, nicht in der App) 256-px-PNGs nach
+  `src/App/Assets/Achievements/<id>.png` und `<id>.locked.png`. Eigene Arbeit, daher nicht in Credits.
+  Ein Test prüft, dass jeder Erfolg beide Dateien hat.
+- Erfolgsseite: eigener Navigationseintrag (Stern `E734`), Karten in `Controls/CardGridPanel`
+  (gleich breite Spalten, Zeilenhöhe = höchste Karte; UniformGridLayout schnitt Texte ab).
+  Farben nur per `ThemeResource` in XAML – `Application.Current.Resources` im Code liefert die Pinsel
+  des Windows-Farbschemas, nicht des in Sip gewählten.
 
 Entscheidungen aus Schritt 6 (Töne):
 - Drei Anlässe (`SoundOccasion`): Erinnerung, erneute Erinnerung nach Snooze (`ReminderKind.Snooze`
@@ -174,11 +200,14 @@ dotnet build src/App/App.csproj -p:Platform=x64
 Add-AppxPackage -Register src\App\bin\x64\Debug\net10.0-windows10.0.26100.0\AppxManifest.xml -ForceUpdateFromAnyVersion
 Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung.Dev_984vmrdge06s6!App"   # Debug = "Sip (Dev)"
 dotnet run tools/gen-icons.cs   # Icons neu erzeugen (aus dem Repo-Wurzelverzeichnis)
+dotnet run tools/gen-badges.cs  # Erfolgs-Badges neu erzeugen (--svg <Ordner> schreibt zusätzlich die SVGs)
 .\tools\Build-StorePackage.ps1   # Store-Paket → artifacts\AppPackages\*.msixupload
 .\tools\Build-StorePackage.ps1 -Version 1.0.1   # Store-Update: Version im Manifest erhöhen + bauen
 ```
 
-Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`), sonst ist die EXE gesperrt.
+Vor einem Neubau die laufende Dev-Version beenden, sonst ist die EXE gesperrt:
+`Get-Process Trinkwasser | Where-Object Path -like "*\bin\*" | Stop-Process`. **Nie** `Stop-Process -Name Trinkwasser` –
+das beendet auch die Store-Version, die der Nutzer benutzt.
 Alternativ in Visual Studio 2026 mit F5 (Plattform x64).
 
 ## Umgebung und Eigenheiten

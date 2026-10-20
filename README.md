@@ -6,7 +6,9 @@ Windows-Benachrichtigung ans Wassertrinken. „Getrunken“ zählt ein Glas,
 
 - Erinnerungen im Wunschintervall, nur während der Arbeitszeit (pro Wochentag)
 - Tages- und Wochenziel mit Fortschritt, „+1 Glas“ und „Rückgängig“
-- Eigene Töne je Anlass (Erinnerung, erneute Erinnerung, Tagesziel erreicht):
+- 17 Erfolge mit eigenen Badges (Erste Schritte, Menge, Durchhalten, Gewohnheit),
+  Fortschritt auf der Erfolgsseite und Benachrichtigung beim Freischalten
+- Eigene Töne je Anlass (Erinnerung, erneute Erinnerung, Tagesziel erreicht, Erfolg):
   13 Wasser- und Glasgeräusche, Windows-Standard oder lautlos, mit Probehören
 - Statistik: Wochenverlauf, Durchschnitt, beste Tageszeit, Serie, Zielerreichung
 - Deutsch und Englisch, umschaltbar ohne Neustart
@@ -41,14 +43,17 @@ Start-Process "shell:AppsFolder\1J3R0M3.Sip-Trinkerinnerung.Dev_984vmrdge06s6!Ap
   Store-Version, ohne deren Einstellungen und Protokoll anzufassen. Release-Builds
   (Store) behalten die echte Kennung. Umgesetzt im Target `_UseDevPackageIdentity`
   in `src/App/App.csproj`.
-- Vor einem Neubau die laufende App beenden (`Stop-Process -Name Trinkwasser`),
-  sonst ist die EXE gesperrt.
+- Vor einem Neubau die laufende Dev-Version beenden, sonst ist die EXE gesperrt:
+  `Get-Process Trinkwasser | Where-Object Path -like "*\bin\*" | Stop-Process`
+  (`Stop-Process -Name Trinkwasser` würde auch die Store-Version beenden).
 - Ändert sich das Manifest, scheitert die Registrierung mit 0x80073CFB. Dann
   erst `Get-AppxPackage 1J3R0M3.Sip-Trinkerinnerung.Dev | Remove-AppxPackage` – das
   löscht auch die Daten der Dev-Version (nie die Store-Version entfernen).
 - Icons neu erzeugen: `dotnet run tools/gen-icons.cs` (aus dem Wurzelverzeichnis).
 - Töne neu aufbereiten: `dotnet run tools/process-sounds.cs`, Quellen und Lizenzen
   in `src/App/Assets/Sounds/LICENSES.md`.
+- Erfolgs-Badges neu erzeugen: `dotnet run tools/gen-badges.cs` (PNG nach
+  `src/App/Assets/Achievements`, mit `--svg <Ordner>` zusätzlich die SVG-Quellen).
 
 ## Store-Paket und Einreichung
 
@@ -79,7 +84,8 @@ Der angezeigte App-Name steht nur in `src/App/Strings/*/Resources.resw`
 
 ## Daten
 
-Einstellungen (`settings.json`) und Trink-Protokoll (`drinks.json`) liegen im
+Einstellungen (`settings.json`), Trink-Protokoll (`drinks.json`) und Erfolge
+(`achievements.json`) liegen im
 App-Datenordner `%LOCALAPPDATA%\Packages\<Paketname>\LocalState`. Geschrieben
 wird atomar; eine unlesbare Datei wird als `*.broken-<Zeitstempel>.json`
 gesichert statt überschrieben, die App weist darauf hin. Unerwartete Fehler

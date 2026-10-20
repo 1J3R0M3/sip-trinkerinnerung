@@ -1,5 +1,6 @@
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
+using Trinkwasser.Core.Achievements;
 using Trinkwasser.Core.Localization;
 using Trinkwasser.Core.Notifications;
 using Trinkwasser.Core.Sounds;
@@ -58,6 +59,27 @@ public sealed class NotificationService(Localizer loc)
             .AddText(loc.ToastGoalBody(goalMl));
         AppNotificationManager.Default.Show(WithSound(builder, sound).BuildNotification());
     }
+
+    /// <summary>
+    /// "Erfolg freigeschaltet" mit dem Badge als Bild; mehrere Erfolge auf einmal in einer
+    /// Benachrichtigung. Ein Klick öffnet die Erfolgsseite.
+    /// </summary>
+    public void ShowAchievements(IReadOnlyList<Achievement> achievements, string sound)
+    {
+        if (achievements.Count == 0) return;
+        var builder = new AppNotificationBuilder()
+            .AddArgument(ToastArguments.ActionKey, ToastArguments.ToArgument(ToastAction.Achievements))
+            .SetAppLogoOverride(BadgeUri(achievements[0].Id, unlocked: true), AppNotificationImageCrop.Default);
+        builder = achievements is [var single]
+            ? builder.AddText(loc.ToastAchievementTitle).AddText(loc.ToastAchievementBody(single.Id))
+            : builder.AddText(loc.ToastAchievementsTitle(achievements.Count))
+                .AddText(string.Join(", ", achievements.Select(a => loc.AchName(a.Id))));
+        AppNotificationManager.Default.Show(WithSound(builder, sound).BuildNotification());
+    }
+
+    /// <summary>Bild eines Erfolgs (aus tools/gen-badges.cs), freigeschaltet oder grau mit Schloss.</summary>
+    public static Uri BadgeUri(string id, bool unlocked) =>
+        new($"ms-appx:///Assets/Achievements/{id}{(unlocked ? "" : ".locked")}.png");
 
     /// <summary>Datei eines mitgelieferten Tons; auch für das Probehören in den Einstellungen.</summary>
     public static Uri SoundUri(string id) => new($"ms-appx:///Assets/Sounds/{id}.wav");
